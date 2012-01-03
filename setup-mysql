@@ -1,0 +1,216 @@
+#!/usr/bin/python
+
+dbname = raw_input("Name of MySQL database to be created: ")
+dbuser = raw_input("Name of MySQL user to be created: ")
+dbpass = raw_input("Password for MySQL user %s: " % dbuser)
+
+f = open("%(dbname)s.properties" % locals(), 'w')
+f.write(
+"""
+tweater.dbType=mysql
+tweater.mysql.name=%(dbname)s
+tweater.mysql.user=%(dbuser)s
+tweater.mysql.pass=%(dbpass)s
+tweater.mysql.host=localhost
+tweater.mysql.queryGroups=
+oauth.consumerKey=RTojEz16nwhI3IrBrZpNQ
+oauth.consumerSecret=lNfVdu2cFKrlEbaw1OiM2Y3TgVKLGBI3AuEEblZilek
+""" % locals())
+f.close()
+
+fn = "%(dbname)s.sql" % locals()
+f = open(fn, 'w')
+f.write(
+"""
+# Create database and user
+DROP DATABASE IF EXISTS %(dbname)s;
+GRANT USAGE ON *.* TO '%(dbuser)s'@'localhost'; # Hack to work around lack of "drop user if exists"
+DROP USER '%(dbuser)s'@'localhost';
+CREATE USER '%(dbuser)s'@'localhost' IDENTIFIED BY '%(dbpass)s';
+CREATE DATABASE %(dbname)s CHARACTER SET utf8 COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON %(dbname)s.* TO '%(dbuser)s'@'localhost';
+FLUSH PRIVILEGES;
+USE %(dbname)s;
+
+# Groups of Twitter queries, all related to each other, that start/end at common times
+CREATE TABLE query_group (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_group_no INTEGER NOT NULL AUTO_INCREMENT,
+  query_start_time BIGINT NOT NULL,
+  query_end_time BIGINT NOT NULL,
+  PRIMARY KEY(query_group_no),
+  INDEX(query_start_time),
+  INDEX(query_end_time),
+  INDEX(query_start_time, query_end_time)) 
+  ENGINE innodb;
+  
+# Sets of track keyword (separated by spaces), where all words must exist in a tweet
+CREATE TABLE query_track (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_track_no INTEGER NOT NULL AUTO_INCREMENT,
+  query_group_no INTEGER NOT NULL,
+  query_track_string VARCHAR(140) NOT NULL,
+  PRIMARY KEY(query_track_no),
+  FOREIGN KEY(query_group_no) REFERENCES query_group(query_group_no) ON DELETE CASCADE) 
+  ENGINE innodb;
+  
+# Sets of track phrases, where the exact phrase (case insensitive) must exist in a tweet
+CREATE TABLE query_phrase (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_phrase_no INTEGER NOT NULL AUTO_INCREMENT,
+  query_group_no INTEGER NOT NULL,
+  query_phrase_string VARCHAR(140) NOT NULL,
+  PRIMARY KEY(query_phrase_no),
+  FOREIGN KEY(query_group_no) REFERENCES query_group(query_group_no) ON DELETE CASCADE) 
+  ENGINE innodb;
+
+# List of user ids to follow
+CREATE TABLE query_follow (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_follow_no INTEGER NOT NULL AUTO_INCREMENT,
+  query_group_no INTEGER NOT NULL,
+  query_user_id INTEGER NOT NULL,
+  PRIMARY KEY(query_follow_no),
+  FOREIGN KEY(query_group_no) REFERENCES query_group(query_group_no) ON DELETE CASCADE) 
+  ENGINE innodb;
+
+# A Twitter user's information, collected at a specific time
+CREATE TABLE user (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  user_id INTEGER NOT NULL,
+  user_info_from_status BIGINT NOT NULL,
+  user_name VARCHAR(30) NOT NULL,
+  user_join_date BIGINT NOT NULL,
+  user_status_count INTEGER NOT NULL,
+  user_followers INTEGER NOT NULL,
+  user_friends INTEGER NOT NULL,
+  user_listed INTEGER NOT NULL,
+  user_verified BOOL NOT NULL,
+  user_lang VARCHAR(3) NOT NULL,
+  user_location VARCHAR(256) NOT NULL,
+  user_utc_offset INTEGER NOT NULL,
+  PRIMARY KEY(user_id, user_info_from_status))
+  ENGINE innodb;
+
+# Individual tweets
+CREATE TABLE status (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  status_id BIGINT NOT NULL,
+  user_id INTEGER NOT NULL,
+  status_date BIGINT NOT NULL,
+  status_text VARCHAR(140) NOT NULL,
+  status_is_retweet BOOL NOT NULL,
+  status_retweet_of BIGINT NOT NULL,
+  status_retweet_count BIGINT NOT NULL,
+  status_latitude DOUBLE NOT NULL,
+  status_longitude DOUBLE NOT NULL,
+  PRIMARY KEY(status_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+  INDEX(status_retweet_of),
+  INDEX(status_date))
+  ENGINE innodb;
+  
+# links between statuses and the track keywords that they match
+CREATE TABLE track_match (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_track_no INTEGER NOT NULL,
+  status_id BIGINT NOT NULL,
+  PRIMARY KEY(query_track_no, status_id),
+  FOREIGN KEY(query_track_no) REFERENCES query_track(query_track_no) ON DELETE CASCADE,
+  FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 
+  ENGINE innodb;
+
+# links between statuses and the track phrases that they match
+CREATE TABLE phrase_match (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_phrase_no INTEGER NOT NULL,
+  status_id BIGINT NOT NULL,
+  PRIMARY KEY(query_phrase_no, status_id),
+  FOREIGN KEY(query_phrase_no) REFERENCES query_phrase(query_phrase_no) ON DELETE CASCADE,
+  FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 
+  ENGINE innodb;
+
+# links between statuses and the follow users they match
+CREATE TABLE follow_match (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  query_follow_no INTEGER NOT NULL,
+  status_id BIGINT NOT NULL,
+  PRIMARY KEY(query_follow_no, status_id),
+  FOREIGN KEY(query_follow_no) REFERENCES query_follow(query_follow_no) ON DELETE CASCADE,
+  FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 
+  ENGINE innodb;
+
+# hashtag entities
+CREATE TABLE hashtag (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  hashtag_no INTEGER NOT NULL AUTO_INCREMENT,
+  hashtag_text VARCHAR(140) NOT NULL,
+  PRIMARY KEY(hashtag_no),
+  UNIQUE(hashtag_text))
+  ENGINE innodb;
+  
+# links between statuses and the hashtags they contain
+CREATE TABLE hashtag_match (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  hashtag_no INTEGER NOT NULL,
+  status_id BIGINT NOT NULL,
+  hashtag_startidx SMALLINT NOT NULL,
+  hashtag_endidx SMALLINT NOT NULL,
+  PRIMARY KEY(hashtag_no, status_id),
+  FOREIGN KEY(hashtag_no) REFERENCES hashtag(hashtag_no) ON DELETE CASCADE,
+  FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 
+  ENGINE innodb;
+
+# expanded link entities
+CREATE TABLE expanded_link (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  expanded_link_no INTEGER NOT NULL AUTO_INCREMENT,
+  expanded_link_url VARCHAR(512) NOT NULL,
+  PRIMARY KEY(expanded_link_no),
+  UNIQUE(expanded_link_url(100)))
+  ENGINE innodb;
+
+# possibly-shortened link entities that actually appear in tweets
+CREATE TABLE link (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  link_no INTEGER NOT NULL AUTO_INCREMENT,
+  link_url VARCHAR(140) NOT NULL,
+  expanded_link_no INTEGER NOT NULL,
+  PRIMARY KEY(link_no),
+  FOREIGN KEY(expanded_link_no) REFERENCES expanded_link(expanded_link_no) ON DELETE CASCADE,
+  UNIQUE(link_url))
+  ENGINE innodb;
+  
+# links between statuses and the links they contain
+CREATE TABLE link_match (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  link_no INTEGER NOT NULL,
+  status_id BIGINT NOT NULL,
+  link_startidx SMALLINT NOT NULL,
+  link_endidx SMALLINT NOT NULL,
+  PRIMARY KEY(link_no, status_id),
+  FOREIGN KEY(link_no) REFERENCES link(link_no) ON DELETE CASCADE,
+  FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE)
+  ENGINE innodb;
+  
+# mentions pulled out of statuses
+CREATE TABLE mention (
+  row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  status_id BIGINT NOT NULL,
+  mention_startidx SMALLINT NOT NULL,
+  mention_endidx SMALLINT NOT NULL,
+  mention_by INTEGER NOT NULL,
+  mention_of INTEGER NOT NULL,
+  PRIMARY KEY(status_id, mention_startidx),
+  FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE,
+  INDEX(mention_by, mention_of),
+  INDEX(mention_of, mention_by)) 
+  ENGINE innodb;
+  
+""" % locals())
+f.close();
+print(
+"""
+SQL commands saved to %(fn)s. Now run:
+$ mysql -u root -p < %(fn)s
+""" % locals())

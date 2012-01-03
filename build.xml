@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Jul 16, 2008 9:43:19 AM                                                        
+
+     eclipse_build    
+     A generic ant build that can build (almost) any eclipse project
+     
+     Omry Yadan (omry@yadan.net)              
+     ====================================================================== -->
+<project name="eclipse_build" default="build_local">
+	<description>
+            A generic ant build that can build (almost) any eclipse project
+    </description>
+
+	<!-- ================================= 
+          target: default              
+         ================================= -->
+	<target name="build_local" depends="setup" description="A generic ant build that can build (almost) any eclipse project">
+
+		<eclipse_build_list rootdir="${workspace}" entry_project="${project}" result="projects" />
+
+		<mkdir dir="${build.output}" />
+		<mkdir dir="${build.output}/temp" />
+		<mkdir dir="${build.output}/temp/classes" />
+		<mkdir dir="${build.output}/dist/lib" />
+
+		<antcall target="for_each_project">
+			<param name="project" value="${project}" />
+			<param name="projects" value="${projects}" />
+			<param name="target" value="build_project" />
+		</antcall>
+
+		
+		<copy todir="${build.output}/dist">
+			<fileset dir="${workspace}/${project}/" excludes="${bin.excludes}" includes="${bin.includes}" />
+		</copy>
+		
+		<files_list dir="${build.output}/dist" includes="lib/**/*.jar" seperator=" " result="manifest.class.path" />
+		<echo>manifest.class.path = ${manifest.class.path}</echo>
+		<jar destfile="${build.output}/dist/${jar.name}" basedir="${build.output}/temp/classes">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Class-Path" value="${manifest.class.path}" />
+				<attribute name="Main-Class" value="${main.class}" />
+			</manifest>
+		</jar>
+		
+		<zip destfile="${build.output}/${zip.name}" 
+			basedir="${build.output}/dist/"
+	        includes="**/*"
+		/>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: build_project                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="build_project" depends="setup">
+
+		<!-- Create source path -->
+		<eclipse_cp action="src" rootdir="${workspace}" project="${proj}" result="proj.src" />
+		<var name="build.sourcepath" value="" />
+		<for list="${proj.src}" param="src" delimiter=";">
+			<sequential>
+				<var name="build.sourcepath" value="${build.sourcepath};${workspace}${proj}/@{src}" />
+			</sequential>
+		</for>
+
+
+		<!-- Create class path -->
+		<eclipse_cp action="libs" rootdir="${workspace}" project="${proj}" result="classpath" />
+		<var name="build.classpath" value="" />
+		<for list="${classpath}" param="jar" delimiter=";">
+			<sequential>
+				<var name="build.classpath" value="${build.classpath};${workspace}@{jar}" />
+			</sequential>
+		</for>
+
+		<echo>build.sourcepath for ${proj} = ${build.sourcepath}</echo>
+		<echo>build.classpath for ${proj} = ${build.classpath}</echo>
+
+		<!-- compile project source -->
+		<if>
+			<equals arg1="${build.sourcepath}" arg2="" />
+			<then>
+				<echo message="Nothing to compile at project ${proj} " level="warning" />
+			</then>
+			<else>
+				<mkdir dir="${build.output}" />
+
+				<javac source="${javac.source}" target="${javac.target}" srcdir="${build.sourcepath}" destdir="${build.output}/temp/classes" classpath="${build.classpath}" debug="${javac.debug}" debuglevel="${javac.debug.level}" />
+
+				<!-- Copy non java files from source path into output dir -->
+				<for list="${proj.src}" param="src" delimiter=";">
+					<sequential>
+						<copy todir="${build.output}/temp/classes">
+							<fileset dir="${workspace}${proj}/@{src}">
+								<exclude name="**/*.java" />
+							</fileset>
+						</copy>
+					</sequential>
+				</for>
+				
+				<var name="jar.classpath" value="" />
+				<for list="${classpath}" param="jar" delimiter=";">
+					<sequential>
+						<copy tofile="${build.output}/dist/lib/@{jar}" file="${workspace}@{jar}" />
+					</sequential>
+				</for>
+			</else>
+		</if>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+	          target: setup                      
+	 - - - - - - - - - - - - - - - - - -->
+	<target name="setup">
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="antlib/ant-contrib-1.0b1.jar" />
+		<taskdef resource="firefang_ant.properties" classpath="antlib/ant_tasks.jar" />
+		<!--
+		<taskdef resource="firefang_ant.properties" classpath="../ebuild/output/fragments/ant_tasks.jar" />
+		 -->
+
+		<!-- Assert module to build is defined -->
+		<antcall target="assert_defined">
+			<param name="param" value="project" />
+		</antcall>
+
+		<!-- load common properties -->
+		<loadproperties srcfile="common.properties">
+		</loadproperties>
+
+		<property name="project.dir" location="${workspace}/${project}" />
+
+		<!-- project specific build properties, may override common.properties -->
+		<var file="${project.dir}/build.properties" />
+
+		<property name="build.output" value="${workspace}/${project}/${build.dir}" />
+
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: assert_defined                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="assert_defined">
+		<for list="${param}" param="p" delimiter=",">
+			<sequential>
+				<fail unless="@{p}" message="@{p} not defined" />
+			</sequential>
+		</for>
+	</target>
+
+
+	<target name="assert_defined_and_not_empty">
+		<for list="${param}" param="p" delimiter=",">
+			<sequential>
+				<fail unless="@{p}" message="@{p} not defined" />
+				<if>
+					<equals arg1="${@{p}}" arg2="" />
+					<then>
+						<fail message="@{p} is empty" />
+					</then>
+				</if>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="for_each_project">
+
+		<antcall target="assert_defined">
+			<param name="param" value="projects,target" />
+		</antcall>
+
+		<for list="${projects}" param="proj" delimiter=",">
+			<sequential>
+				<echo>calling ${target} for ${workspace}@{proj}</echo>
+				<ant dir="." antfile="build.xml" inheritall="false" target="${target}">
+					<property name="proj" value="@{proj}" />
+				</ant>
+			</sequential>
+		</for>
+	</target>
+
+	<!-- ================================= 
+          target: clean              
+         ================================= -->
+	<target name="clean" depends="setup" description="--> clean module and all dependent modules">
+		<delete failonerror="false" dir="${build.output}" />
+	</target>
+
+	
+	
+</project>

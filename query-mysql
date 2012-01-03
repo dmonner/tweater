@@ -1,0 +1,45 @@
+#!/usr/bin/python
+
+from dateutil.parser import parse as dparse
+from time import mktime
+import codecs
+import sys
+
+if len(sys.argv) < 2:
+	print "USAGE: query-mysql <query-file.csv> > query.sql"
+	
+fout = codecs.open(sys.argv[-1], mode='w', encoding="utf-8")
+
+fout.write(u'SET NAMES utf8;\n');
+for file in sys.argv[1:-1]:
+	fin = codecs.open(file, mode='r', encoding="utf-8")
+	lno = 1
+	for line in fin.readlines():
+		line = line.strip()
+		if not line.startswith("#") and not len(line) == 0:
+			fields = line.split(",")
+			if len(fields) == 4:
+				start = int(mktime(dparse(fields[0].strip()).timetuple()) * 1000.0)
+				end = int(mktime(dparse(fields[1].strip()).timetuple()) * 1000.0)
+				type = fields[2].strip()
+				query = fields[3].strip()
+				do_insert = True
+
+				if type == "phrase":
+					ins_query = u"INSERT INTO query_phrase(query_group_no,query_phrase_string) VALUES (LAST_INSERT_ID(),'%s');" % query
+				elif type == "keywords":
+					ins_query = u"INSERT INTO query_track(query_group_no,query_track_string) VALUES (LAST_INSERT_ID(),'%s');" % query
+				elif type == "user":
+					ins_query = u"INSERT INTO query_follow(query_group_no,query_user_id) VALUES (LAST_INSERT_ID(),%s);" % query
+				else:
+					sys.stderr.write("Unknown query type %s on line %i; skipping.\n" % (type, lno))
+					doInsert = False
+					
+				if do_insert:
+					fout.write(u"INSERT INTO query_group(query_start_time,query_end_time) VALUES (%i,%i);\n" % (start, end))
+					fout.write(ins_query + u'\n')
+			else:
+				sys.stderr.write("Malformed line %i has %i fields; skipping.\n" % (lno, len(fields)))
+		lno += 1
+	
+	fin.close()

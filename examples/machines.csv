@@ -1,0 +1,8 @@
+# TO START:
+# Copy this file to the main TwEater directory (the one with the "finder" script); modify only the
+# copy in that directory.
+#
+# FORMAT:
+# hostname, ssh-port, tweater-directory, listening-port
+machine1.mydomain.com,22,~/TwEater,22222
+machine2.mydomain.com,22,~/TwEater,22222

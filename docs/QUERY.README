@@ -1,0 +1,36 @@
+QUERY CONSTRUCTION
+
+Twitter queries are case-INsensitive and are specified as sets of whitespace-separated keywords, ALL of much must be present in a tweet for it to be sent to you. Twitter does not support phrases of whitespace-separated keywords, but TwEater adds this functionality by submitting a normal query and discarding any tweets sent back that do not match the phrase in full. Thus, one must make sure that phrase queries, when construed as keywords-anywhere queries by Twitter, are not too broad, and would in fact return tweets containing the phrase in question, as detailed below.
+
+When considering keywords-anywhere queries, Twitter does NOT simply do substring matching on tweets. Instead, they break each tweet up based on whitespace and put them into a hashtable so they can ask questions like "is X in the tweet?" where X is a specific, exact keyword.
+
+Thus, queries you specify are broken up into keywords based on whitespace, and Twitter searches for tweets with each keyword individually. For example, if your query is "odoyle rules", Twitter determines whether to send a given tweet to you by asking if it contains "odoyle" first, and if it does, then asking whether it also contains "rules". If it contained both, the tweet gets sent to you. So for the keywords-anywhere query "odoyle rules":
+
+"Odoyle rules ... heh heh ... Love that movie." matches;
+"Hey Odoyle, check out the new rules posted at the gym" matches;
+"Class, here are the new rules" does not match.
+
+Note that ONLY EXACT keyword matches are returned. There is no substring matching or stemming. Thus:
+
+"glodoyle rules!" does not match, even though "odoyle" is a substring of "glodoyle";
+"odoyle drules!" also does not match, even though "rules" is a substring of "drules".
+
+If the query was something simpler like "read", then:
+
+"Whoa I need to read my homework!" matches;
+"Busy reading homework" does not match, even though "read" is a substring of "reading";
+"Who reads this shit?" does not match, even though "read" is a substring of "reads".
+
+Thus, if you want all forms of "read", you need to specify separate queries for "read", "reads", "reading", etc.
+
+The only known exception to the "no substring matching" rules is for punctuation:
+
+Query "read" matches tweets "@read", "#read", and "read!", but not "reads" or "@reading" or "reader!".
+
+This is because, in their database, Twitter lists any token with punctuation twice: Once as an exact match (e.g. "#rules!") and once with the punctuation stripped (e.g. "rules"). Thus, if you use keywords without punctuation, you should pick up everything. On the other hand, if you use a query with punctuation, you only get the exact punctuation matches:
+
+Query "m&ms" matches tweet "m&ms" but not "m!ms" or "mms";
+On the other hand, query "mms" should get all of the above.
+
+Query "#geek<3" matches tweet "#geek<3" but not "geek<3" or "geek3" or "#geek3";
+On the other hand, query "geek3" should get all of the above.

@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Command (start, stop, add, dump, etc) comes from the command line
+COMMAND="$1"
+
+# The properties file to use comes from the command line
+PROP_FILE="$2"
+
+# Set the file specifying worker machines
+MACHINE_FILE="machines.csv"
+
+# Set the amount of memory each instance can use for it's queue
+MEMORY="256m"
+
+# Set the remote host name of the server machine
+SERVER_HOST="bass.rhsmith.umd.edu"
+
+# Set the server export port
+SERVER_PORT=23891
+
+#------------------------------------------------------------------------------
+
+# Make sure that RMIRegistry is up and running
+rmiregistry &> /dev/null &
+
+# Figure out where the project's JAR file is
+PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
+JARPATH="`pwd`/build/dist/${PROJECT}.jar"
+
+# Set the classpath var CP
+DIR="`dirname "$0"`"
+CP="`find "${DIR}/build/dist" -iname *.jar | tr '\n' ':'`"
+
+# Check whether the first argument is "start" or something else
+ARG=`echo "$1" | tr '[A-Z]' '[a-z]'`
+
+if [ "$COMMAND" == "start" ]
+then
+	# Run the program with nohup, &, and Xmx to start a new instance
+	nohup java -server -Xmx${MEMORY} -cp "${CP}" \
+	        -Djava.rmi.server.codebase="file://${JARPATH}" \
+	        -Djava.util.logging.config.file=logging.properties \
+		        finder.Finder "$COMMAND" "$PROP_FILE" "$MACHINE_FILE" $SERVER_PORT & 
+	echo "Started server on `hostname`."
+
+	# Start worker processes on machines from file
+	while read LINE
+	do
+		WORKER=`echo $LINE | awk -F , '{print $1}'`
+		SSH_PORT=`echo $LINE | awk -F , '{print $2}'` 
+		CODE_PATH=`echo $LINE | awk -F , '{print $3}'` 
+		BIND_PORT=`echo $LINE | awk -F , '{print $4}'`
+		ssh -p $SSH_PORT $WORKER "cd $CODE_PATH; ./worker '$PROP_FILE' $SERVER_HOST $BIND_PORT &" &
+	done < "$MACHINE_FILE"
+else
+	# Run the program in single-interaction mode 
+	java -server -cp "${CP}" \
+	        -Djava.rmi.server.codebase="file://${JARPATH}" \
+	        -Djava.util.logging.config.file=logging.properties \
+	        edu.umd.cs.dmonner.tweater.finder.Finder "$@"
+fi

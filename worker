@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Kill any existing worker processes
+pid="`jps | grep FinderWorker | sed 's/\([0-9]*\).*/\1/'`"
+if [ -n "$pid" ];
+then
+	kill $pid
+fi
+
+# Find the codebase
+PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
+JARPATH="`pwd`/build/dist/${PROJECT}.jar"
+
+# Make sure RMIRegistry is up
+rmiregistry &> /dev/null &
+
+# Set the classpath var CP
+DIR="`dirname "$0"`"
+CP="`find "${DIR}/build/dist" -iname *.jar | tr '\n' ':'`"
+
+# Run the worker
+nohup java -server -cp "${CP}" \
+        -Djava.rmi.server.codebase="file://${JARPATH}" \
+        -Djava.util.logging.config.file=lib/logging.properties \
+        -Dtwitter4j.includeEntities=true \
+        edu.umd.cs.dmonner.tweater.finder.FinderWorker $@ &
+
+echo "Started worker on host `hostname`."	

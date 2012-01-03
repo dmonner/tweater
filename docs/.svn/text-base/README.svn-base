@@ -1,0 +1,13 @@
+QUICK START
+
+First, you need to choose what kind of backend you want to use to store tweets.
+
+For smaller data collections that don't require much in the way of searching, subsetting, or statistical analysis, a CSV file works just fine. Check out the file CSV.README if you want to use a flat CSV file as your backend.
+
+For larger data collections, or ones that require the full selection power of SQL, tweets can be stored in a database of an existing MySQL installation. Check out the file MYSQL.README if you're planning to use a MySQL backend.
+
+
+
+ADVANCED
+
+See FINDER.README for instructions on using the hole-filling script in case of an outage during your data collection.

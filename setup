@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
+
+DIR="`dirname "$0"`"
+CP="`find "${DIR}/build/dist" -iname *.jar | tr '\n' ':'`"
+
+java -cp "${CP}" edu.umd.cs.dmonner.tweater.util.Setup $@

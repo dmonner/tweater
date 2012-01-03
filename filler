@@ -1,0 +1,107 @@
+#!/usr/bin/python
+
+import time
+import re
+import sys
+import traceback
+from lxml.html import parse as htmlparse
+from urllib import quote_plus
+
+provider = "topsy" #"google"
+
+def log(message):
+  print "%s: %s" % (time.strftime("%Y.%m.%d %H:%M:%S"), message)
+  sys.stdout.flush()
+
+def fetch(url):
+  wait = 0.001
+  maxwait = 60
+  tries = 0
+  maxtries = 20
+  while tries < maxtries:
+    wait = min(maxwait, wait * 2)
+    tries += 1
+    try:
+      return(htmlparse(url).getroot())
+    except:
+      if tries >= maxtries:
+        log(traceback.format_exc())
+      log("Waiting %i seconds before re-attempt" % wait)
+      time.sleep(wait)
+  return(None)
+
+def scrape(query, start, end, path):
+  # create the query url
+  url = urlbase % {"query":quote_plus('%s' % query), "mintime":start, "maxtime":end }
+  # feture the url
+  root = fetch(url)
+  # get the tweet result items out of the page
+  results = root.xpath(path)
+  log((query, start, end, len(results)))
+  # if there are too many results in the time window [start, end]
+  if len(results) >= resultmax and start + 1 < end:
+    # calculate the midpoint of the window and recurse on two halves
+    mid = int((start + end) / 2)
+    scrape(query, start, mid, path)
+    scrape(query, mid, end, path)
+  # otherwise, we can just store the tweets we got back
+  else:
+    # in each div, we want the <a> element inside the last sub-div
+    items = [result.xpath('a') for result in results]
+    items = [item for sublist in items for item in sublist] # flatten list
+    # use the twitter url regex to pull tweet urls out of each item 
+    matches = [linkre.search(x.get("href")) for x in items]
+    matches = [match for match in matches if match is not None]
+    # pull the match group (the tweet id) out of each url
+    tweet_ids = [x.group(1) for x in matches if x]
+    # make Twitter REST API calls for each tweet id to get the full status object
+    f = open(outfile, 'a')
+    for tweet_id in tweet_ids:
+      f.write("%s\n" % tweet_id)
+    f.close()
+# end scrape
+
+
+# GLOBALS
+# -- Max number of results in a Google Realtime page
+resultmax = 10
+# -- Regex for getting a status id out of a Twitter URL
+linkre = re.compile("http://twitter\.com/[^/]+/status/(\d+)")
+# -- Base URL schema for Google Realtime queries
+
+if provider == "topsy":
+  urlbase = "http://topsy.com/s?type=tweet&order=date&window=custom&offset=0&mintime=%(mintime)i&maxtime=%(maxtime)i&q=%(query)s"
+  path = '//span[@class="tweet-attribs"]'
+else:
+  urlbase = "http://www.google.com/search?q=%(query)s&hl=en&tbs=mbl:1,mbl_hs:%(mintime)i,mbl_he:%(maxtime)i,mbl_rs:%(mintime)i,mbl_re:%(maxtime)i"
+  path = '//ol[@id="rtr"]/li/table/tr/td/div/div/div'
+
+# INPUTS
+if len(sys.argv) < 5:
+  print("USAGE: filler <start-time-secs> <end-time-secs> <query-file> <out-file> [<input-is-follow-usernames>]")
+  print("EXAMPLE: filler 1299633669 1299670730 'queries.txt' '3-9-ids.out' 0")
+
+else:
+  start = int(sys.argv[1]) # in s, not ms
+  end = int(sys.argv[2]) # in s, not ms
+  queryfile = sys.argv[3] # one per line
+  outfile = sys.argv[4]
+  if len(sys.argv) > 5:
+    follow = bool(int(sys.argv[5]))
+  else:
+    follow = False
+
+  # read all the lines, dropping the final newline and surrounding whitespace
+  f = open(queryfile, 'r')
+  queries = [line.strip() for line in f.readlines()]
+  f.close()
+
+  log("Started with start=%i and end=%i" % (start, end))
+
+  for query in queries:
+    if follow:
+      query = "site:twitter.com/" + query
+    else:
+      query = '"' + query + '"'
+    scrape(query, start, end, path)
+

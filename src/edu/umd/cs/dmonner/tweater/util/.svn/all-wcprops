@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/dmonner/!svn/ver/3245/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util
+END
+OneLineFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/dmonner/!svn/ver/3130/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/OneLineFormatter.java
+END
+Setup.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/dmonner/!svn/ver/3130/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/Setup.java
+END
+AlertEmailer.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/dmonner/!svn/ver/3130/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/AlertEmailer.java
+END
+LogDiffKeeper.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/dmonner/!svn/ver/3236/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/LogDiffKeeper.java
+END
+NumberSet.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/dmonner/!svn/ver/3130/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/NumberSet.java
+END
+NumberRange.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/dmonner/!svn/ver/3130/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/NumberRange.java
+END
+Properties.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/dmonner/!svn/ver/3133/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/Properties.java
+END
+Util.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/dmonner/!svn/ver/3245/TwEater/trunk/src/edu/umd/cs/dmonner/tweater/util/Util.java
+END

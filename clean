@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
+
+ant -f build.xml -Dproject="$PROJECT" clean

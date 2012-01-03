@@ -1,0 +1,14 @@
+REQUIREMENTS
+
+TO USE:
+
+Java Virtual Machine 1.6+, for the main collection application and outage gap-filling application.
+
+Python 2.6+, for the SQL code generator and outage gap-filling Google Realtime script
+
+MySQL 5 server. Root access will be required at setup time to create a database and a user.
+
+
+TO COMPILE A NEW VERSION (only necessary if you change the Java code):
+
+Apache Ant for use in the "compile" shell script.
