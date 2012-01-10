@@ -12,14 +12,14 @@ import javax.mail.internet.MimeMessage;
 /**
  * A class that reads email information from a Properties object and can thereafter send email
  * message alerts.
- * 
+ *
  * @author dmonner
  */
 public class AlertEmailer
 {
 	/**
 	 * Sends an email using the given parameters.
-	 * 
+	 *
 	 * @param smtp
 	 *          The SMTP server to send from
 	 * @param from
@@ -37,7 +37,8 @@ public class AlertEmailer
 		final String body) throws MessagingException
 	{
 		// Silently quit if we are missing any required email information
-		if(smtp == null || from == null || to == null)
+		if(smtp == null || from == null || to == null ||
+		   smtp.isEmpty() || from.isEmpty() || to.isEmpty())
 			return;
 
 		// Set the host smtp address
@@ -79,7 +80,7 @@ public class AlertEmailer
 
 	/**
 	 * Reads SMTP server, to-email, and from-email from the given Properties file.
-	 * 
+	 *
 	 * @param props
 	 */
 	public AlertEmailer(final Properties props)
@@ -92,7 +93,7 @@ public class AlertEmailer
 	/**
 	 * Sends an alert message, with the specified subject and message contents, using the SMTP server,
 	 * to address, and from address that were read when this object was created.
-	 * 
+	 *
 	 * @param subj
 	 *          The subject line
 	 * @param msg
