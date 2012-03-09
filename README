@@ -1,1 +1,9 @@
-See the files in doc/ for more information.
+See the files in docs/ for more information on setting up TwEater.
+
+
+KNOWN ISSUES:
+
+There is a bug in Java release 6u29 (and some versions of 7.x); it contains a broken version of
+rmiregistry that doesn't recogize codebase commands with file:/ parameters. This will manifest as
+an exception when running TwEater that says "access to class loader denied". The only known fix
+is to update to a more recent version of Java.
