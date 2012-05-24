@@ -8,13 +8,30 @@ MEMORY="2048m"
 # Make sure that RMIRegistry is up and running
 rmiregistry &> /dev/null &
 
+# Figure out the operating system (in lower case)
+OS="`uname -s | tr '[A-Z]' '[a-z]'`"
+
+# Set the classpath separator based on OS
+if [[ "$OS" =~ ^cygwin ]]
+then
+  # cygwin = windows = weird ; separator
+  SEP = ";"
+else
+  # otherwise assume unix-like OS with : separator
+  SEP = ":"
+fi
+
 # Figure out where the project's JAR file is
-PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
+# IF using precompiled class files (default)
+PROJECT="TwEater"
+# IF compiling yourself with ebuild
+#PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
+
 JARPATH="`pwd`/build/dist/${PROJECT}.jar"
 
 # Set the classpath var CP
 DIR="`dirname "$0"`"
-CP="`find "${DIR}/build/dist" -iname *.jar | tr '\n' ':'`"
+CP="`find "${DIR}/build/dist" -iname *.jar | tr '\n' '${SEP}'`"
 
 # Check whether the first argument is "start" or something else
 ARG=`echo "$1" | tr '[A-Z]' '[a-z]'`
