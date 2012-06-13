@@ -109,7 +109,7 @@ public class CSVStatusEater extends BaseStatusEater
 				lang + "\"," + //
 				user.getUtcOffset() / 3600 + ",\"" + //
 				matches.get(0).toString() + "\"," + //
-				(sentiment != Double.NaN ? sentiment : "") + "\"");
+				(sentiment != Double.NaN ? sentiment : ""));
 			this.outfile.flush();
 		}
 	}

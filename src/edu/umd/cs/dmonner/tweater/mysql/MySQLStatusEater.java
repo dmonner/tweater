@@ -383,7 +383,7 @@ public class MySQLStatusEater extends BaseStatusEater
 			double sentiment = Double.NaN;
 			if(match.type == Type.TRACK)
 			{
-				table = "track_match(query_track_no, status_id, status_sentiment)";\
+				table = "track_match(query_track_no, status_id, status_sentiment)";
 				sentiment = analyzer.process(status.getText(), ((QueryTrack) match).string);
 			}
 			else if(match.type == Type.PHRASE)
