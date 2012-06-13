@@ -9,6 +9,12 @@ import twitter4j.User;
 import edu.umd.cs.dmonner.tweater.BaseStatusEater;
 import edu.umd.cs.dmonner.tweater.QueryItem;
 
+//import python libraries
+import org.python.util.PythonInterpreter;
+import org.plyjy.factory.JythonObjectFactory;
+import org.geonames.WebService;
+import org.jython.book.interfaces.SentimentAnalyzer;
+
 /**
  * This class persists statuses to a local CSV file.
  * 
@@ -76,6 +82,10 @@ public class CSVStatusEater extends BaseStatusEater
 		final boolean rt = status.isRetweet();
 		final long rtct = rt ? status.getRetweetCount() : 0;
 		final long rtid = rt ? status.getRetweetedStatus().getId() : -1;
+		
+		// get sentiment information
+		double sentiment = Double.NaN;
+		sentiment = analyzer.process(status.getText(), matches.get(0).toString());
 
 		synchronized(outfile)
 		{
@@ -98,7 +108,8 @@ public class CSVStatusEater extends BaseStatusEater
 				user.isVerified() + ",\"" + //
 				lang + "\"," + //
 				user.getUtcOffset() / 3600 + ",\"" + //
-				matches.get(0).toString() + "\"");
+				matches.get(0).toString() + "\"," + //
+				(sentiment != Double.NaN ? sentiment : "") + "\"");
 			this.outfile.flush();
 		}
 	}

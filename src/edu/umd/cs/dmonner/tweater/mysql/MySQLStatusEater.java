@@ -18,7 +18,15 @@ import twitter4j.UserMentionEntity;
 import edu.umd.cs.dmonner.tweater.BaseStatusEater;
 import edu.umd.cs.dmonner.tweater.QueryItem;
 import edu.umd.cs.dmonner.tweater.QueryItem.Type;
+import edu.umd.cs.dmonner.tweater.QueryPhrase;
+import edu.umd.cs.dmonner.tweater.QueryTrack;
 import edu.umd.cs.dmonner.tweater.util.Util;
+
+// import python libraries
+import org.python.util.PythonInterpreter;
+import org.plyjy.factory.JythonObjectFactory;
+import org.geonames.WebService;
+import org.jython.book.interfaces.SentimentAnalyzer;
 
 /**
  * This class persists statuses to a MySQL database.
@@ -372,17 +380,21 @@ public class MySQLStatusEater extends BaseStatusEater
 		for(final QueryItem match : matches)
 		{
 			final String table;
+			double sentiment = Double.NaN;
 			if(match.type == Type.TRACK)
 			{
-				table = "track_match(query_track_no, status_id)";
+				table = "track_match(query_track_no, status_id, status_sentiment)";\
+				sentiment = analyzer.process(status.getText(), ((QueryTrack) match).string);
 			}
 			else if(match.type == Type.PHRASE)
 			{
-				table = "phrase_match(query_phrase_no, status_id)";
+				table = "phrase_match(query_phrase_no, status_id, status_sentiment)";
+				sentiment = analyzer.process(status.getText(), ((QueryPhrase) match).string);
 			}
 			else if(match.type == Type.FOLLOW)
 			{
-				table = "follow_match(query_follow_no, status_id)";
+				table = "follow_match(query_follow_no, status_id, status_sentiment)";
+				sentiment = analyzer.process(status.getText());
 			}
 			else
 			{
@@ -390,7 +402,9 @@ public class MySQLStatusEater extends BaseStatusEater
 				continue;
 			}
 
-			sqls.add("INSERT INTO " + table + " VALUES (" + match.id + ", " + status.getId() + ");");
+			sqls.add("INSERT INTO " + table + " VALUES (" + match.id + //
+					", " + status.getId() + ", " + //
+					(sentiment != Double.NaN ? sentiment : "") + ");");
 		}
 
 		// SQL to insert hashtag entities
