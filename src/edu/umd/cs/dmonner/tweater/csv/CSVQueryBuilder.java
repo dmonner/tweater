@@ -81,7 +81,7 @@ public class CSVQueryBuilder extends QueryBuilder
 				if(fields.length != 4)
 				{
 					log.warning("Malformed input! Expected 4 fields, found " + fields.length
-						+ ", line number " + lineno);
+							+ ", line number " + lineno);
 					continue;
 				}
 
@@ -94,9 +94,10 @@ public class CSVQueryBuilder extends QueryBuilder
 
 				if(type.equalsIgnoreCase("phrase"))
 					qitem = new QueryPhrase(lineno, lineno, item);
-				else if(type.equalsIgnoreCase("keywords"))
+				else if(type.equalsIgnoreCase("keywords") || type.equalsIgnoreCase("keyword")
+						|| type.equalsIgnoreCase("track"))
 					qitem = new QueryTrack(lineno, lineno, item);
-				else if(type.equalsIgnoreCase("user"))
+				else if(type.equalsIgnoreCase("user") || type.equalsIgnoreCase("follow"))
 				{
 					try
 					{
@@ -105,12 +106,17 @@ public class CSVQueryBuilder extends QueryBuilder
 					catch(final NumberFormatException ex)
 					{
 						log.warning("Malformed input! Expected a user id number (not \"" + item
-							+ "\") on line number " + lineno);
-						continue;
+								+ "\") on line number " + lineno);
 					}
 				}
+				else
+				{
+					log.warning("Malformed input! Type of query must be \"phrase\", \"keywords\", or "
+							+ "\"user\" at line number " + lineno);
+				}
 
-				all.add(new QueryItemTime(qitem, start, end));
+				if(qitem != null)
+					all.add(new QueryItemTime(qitem, start, end));
 			}
 
 			log.fine("Completed CSVQueryBuilder update.");
@@ -119,7 +125,7 @@ public class CSVQueryBuilder extends QueryBuilder
 		catch(final IOException ex)
 		{
 			log.severe("Problem reading input file \"" + infile.getPath() + "\":\n"
-				+ Util.traceMessage(ex));
+					+ Util.traceMessage(ex));
 		}
 		finally
 		{
@@ -130,7 +136,8 @@ public class CSVQueryBuilder extends QueryBuilder
 					in.close();
 				}
 				catch(final IOException ex)
-				{}
+				{
+				}
 			}
 		}
 

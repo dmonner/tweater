@@ -9,8 +9,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.plyjy.factory.JythonObjectFactory;
-
 import twitter4j.GeoLocation;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
@@ -53,8 +51,7 @@ public class MySQLStatusEater extends BaseStatusEater
 	{
 		super(id);
 		this.ds = ds;
-		this.analyzer = (SentimentAnalyzer) JythonObjectFactory.createObject(SentimentAnalyzer.class,
-				"SentimentAnalyzerP");
+		this.analyzer = Util.getSentimentAnalyzer();
 	}
 
 	/**

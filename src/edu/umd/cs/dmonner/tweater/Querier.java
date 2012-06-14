@@ -77,6 +77,8 @@ public class Querier extends Thread
 	 */
 	private boolean shutdown;
 
+	private final Logger log;
+
 	public Querier(final String id, final TwitterStream tw, final QueryBuilder qb)
 	{
 		this.id = id;
@@ -94,6 +96,8 @@ public class Querier extends Thread
 		this.lastUpdate = -MIN_INTERVAL;
 		this.needsUpdate = true;
 		this.shutdown = false;
+
+		this.log = Logger.getLogger(id);
 	}
 
 	/**
@@ -130,9 +134,9 @@ public class Querier extends Thread
 			final FilterQuery fq = new FilterQuery();
 			fq.track(track);
 			fq.follow(follow);
-			Logger.getLogger(id).info("Querier connecting: " + this.toString());
-			Logger.getLogger(id).info("+" + added);
-			Logger.getLogger(id).info("-" + removed);
+			log.info("Querier connecting: " + this.toString());
+			log.info("+" + added);
+			log.info("-" + removed);
 			added.clear();
 			removed.clear();
 			tw.filter(fq);
@@ -176,6 +180,10 @@ public class Querier extends Thread
 				final long now = new Date().getTime();
 				final TreeSet<QueryItem> current = builder.at(now);
 
+				log.finest("Queryier.run():");
+				log.finest("active query: " + active);
+				log.finest("new query: " + current);
+
 				// compare the "current" tree to the "active" tree
 				final TreeSet<QueryItem> toAdd = new TreeSet<QueryItem>(current);
 				toAdd.removeAll(active);
@@ -212,7 +220,7 @@ public class Querier extends Thread
 			// Wait a while before starting the loop again
 			try
 			{
-				Thread.sleep((int)(2000.0 + Math.random() * 1000.0));
+				Thread.sleep((int) (2000.0 + Math.random() * 1000.0));
 			}
 			catch(final InterruptedException ex)
 			{
@@ -236,11 +244,11 @@ public class Querier extends Thread
 
 		for(final QueryItem item : items)
 			if(item instanceof QueryTrack)
-				tracks.add(((QueryTrack)item).string);
+				tracks.add(((QueryTrack) item).string);
 			else if(item instanceof QueryPhrase)
-				tracks.add(((QueryPhrase)item).string);
+				tracks.add(((QueryPhrase) item).string);
 			else if(item instanceof QueryFollow)
-				follows.add(((QueryFollow)item).userid);
+				follows.add(((QueryFollow) item).userid);
 
 		track = tracks.toArray(new String[tracks.size()]);
 		follow = new int[follows.size()];

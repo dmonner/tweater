@@ -166,8 +166,8 @@ public class TwEater extends Thread implements TwEaterControl
 
 		// OAuth properties
 
-		prop.requireProperty("oauth.accessToken");
-		prop.requireProperty("oauth.accessTokenSecret");
+		// prop.requireProperty("oauth.accessToken");
+		// prop.requireProperty("oauth.accessTokenSecret");
 		prop.requireProperty("oauth.consumerKey");
 		prop.requireProperty("oauth.consumerSecret");
 

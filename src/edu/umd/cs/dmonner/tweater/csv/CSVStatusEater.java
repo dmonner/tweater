@@ -3,14 +3,13 @@ package edu.umd.cs.dmonner.tweater.csv;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.plyjy.factory.JythonObjectFactory;
-
 import twitter4j.GeoLocation;
 import twitter4j.Status;
 import twitter4j.User;
 import edu.umd.cs.dmonner.tweater.BaseStatusEater;
 import edu.umd.cs.dmonner.tweater.QueryItem;
 import edu.umd.cs.dmonner.tweater.util.SentimentAnalyzer;
+import edu.umd.cs.dmonner.tweater.util.Util;
 
 /**
  * This class persists statuses to a local CSV file.
@@ -39,8 +38,7 @@ public class CSVStatusEater extends BaseStatusEater
 		super(id);
 
 		this.outfile = outfile;
-		this.analyzer = (SentimentAnalyzer) JythonObjectFactory.createObject(SentimentAnalyzer.class,
-				"SentimentAnalyzerP");
+		this.analyzer = Util.getSentimentAnalyzer();
 
 		// print the column headers to the output file
 		this.outfile.println("user_id, " + //

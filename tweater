@@ -15,26 +15,29 @@ OS="`uname -s | tr '[A-Z]' '[a-z]'`"
 if [[ "$OS" =~ ^cygwin ]]
 then
   # cygwin = windows = weird ; separator
-  SEP = ";"
+  SEP=";"
 else
   # otherwise assume unix-like OS with : separator
-  SEP = ":"
+  SEP=":"
 fi
 
 # Figure out where the project's JAR file is
 # IF using precompiled class files (default)
-PROJECT="TwEater"
-# IF compiling yourself with ebuild
+PROJECT="tweater"
+# IF compiling yourself
 #PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
 
-JARPATH="`pwd`/build/dist/${PROJECT}.jar"
-
-# Set the classpath var CP
-DIR="`dirname "$0"`"
-CP="`find "${DIR}/build/dist" -iname *.jar | tr '\n' '${SEP}'`"
+# Set the classpath and jarpath
+DIR="`pwd`"
+CP="`find "${DIR}/build/dist" -iname *.jar | tr "\n" "${SEP}"`"
+JARPATH="${DIR}/build/dist/${PROJECT}.jar"
 
 # Check whether the first argument is "start" or something else
 ARG=`echo "$1" | tr '[A-Z]' '[a-z]'`
+
+# Uncomment these for debugging if you're having trouble
+#echo $CP
+#echo $JARPATH
 
 if [ "$1" == "start" ]
 then
@@ -43,7 +46,7 @@ then
 	        -Djava.rmi.server.codebase="file://${JARPATH}" \
 	        -Djava.util.logging.config.file=logging.properties \
 		-Dfile.encoding=UTF-8 \
-	        edu.umd.cs.dmonner.tweater.TwEater "$@" &  
+	        edu.umd.cs.dmonner.tweater.TwEater "$@" &> tweater.log &  
 else
 	# Run the program in single-interaction mode 
 	java -server -cp "${CP}" \

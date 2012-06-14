@@ -35,7 +35,7 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
     self.stopwords_dict = [(x, True) for x in stopwords.words()]
     ##### IMPORT THE SENTIMENT CLASSIFIER #####
     try:
-      print "Trying to import classifier..."
+      print "Trying to import sentiment classifier; could take a couple minutes..."
       sys.stdout.flush()
       f = open("classifier.pickle", 'r')
       self.classifier = pickle.load(f)
@@ -43,10 +43,10 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
       f = open("features.pickle", 'r')
       self.masterfeats = pickle.load(f)
       f.close()
-      print "Succeeded!"
+      print "Sentiment classifier import succeeded!"
       sys.stdout.flush()
     except Exception:
-      print "Failed!"
+      print "Sentiment classifier import failed!"
       print traceback.format_exc()
       sys.exit(1)
 

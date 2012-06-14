@@ -5,6 +5,11 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.plyjy.factory.PySystemObjectFactory;
+import org.python.core.Py;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
+
 /**
  * Provides static constants and utility functions for use in other classes.
  * 
@@ -48,6 +53,18 @@ public class Util
 		final Runtime rt = Runtime.getRuntime();
 		final float usedMemory = rt.totalMemory() - rt.freeMemory();
 		return usedMemory / rt.maxMemory();
+	}
+
+	public static SentimentAnalyzer getSentimentAnalyzer()
+	{
+		final String workingDir = System.getProperty("user.dir");
+		final String pyDir = workingDir + "/py";
+		final PySystemState sys = Py.getSystemState();
+		sys.path.append(new PyString(workingDir));
+		sys.path.append(new PyString(pyDir));
+		final PySystemObjectFactory factory = new PySystemObjectFactory(sys, SentimentAnalyzer.class,
+				"SentimentAnalyzerP", "SentimentAnalyzerP");
+		return (SentimentAnalyzer) factory.createObject();
 	}
 
 	/**
