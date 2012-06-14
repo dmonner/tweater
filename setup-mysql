@@ -99,6 +99,7 @@ CREATE TABLE status (
   user_id INTEGER NOT NULL,
   status_date BIGINT NOT NULL,
   status_text VARCHAR(140) NOT NULL,
+  status_sentiment DOUBLE,
   status_is_retweet BOOL NOT NULL,
   status_retweet_of BIGINT NOT NULL,
   status_retweet_count BIGINT NOT NULL,
@@ -115,7 +116,6 @@ CREATE TABLE track_match (
   row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
   query_track_no INTEGER NOT NULL,
   status_id BIGINT NOT NULL,
-  status_sentiment DOUBLE,
   PRIMARY KEY(query_track_no, status_id),
   FOREIGN KEY(query_track_no) REFERENCES query_track(query_track_no) ON DELETE CASCADE,
   FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 
@@ -126,7 +126,6 @@ CREATE TABLE phrase_match (
   row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
   query_phrase_no INTEGER NOT NULL,
   status_id BIGINT NOT NULL,
-  status_sentiment DOUBLE,
   PRIMARY KEY(query_phrase_no, status_id),
   FOREIGN KEY(query_phrase_no) REFERENCES query_phrase(query_phrase_no) ON DELETE CASCADE,
   FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 
@@ -137,7 +136,6 @@ CREATE TABLE follow_match (
   row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
   query_follow_no INTEGER NOT NULL,
   status_id BIGINT NOT NULL,
-  status_sentiment DOUBLE,
   PRIMARY KEY(query_follow_no, status_id),
   FOREIGN KEY(query_follow_no) REFERENCES query_follow(query_follow_no) ON DELETE CASCADE,
   FOREIGN KEY(status_id) REFERENCES status(status_id) ON DELETE CASCADE) 

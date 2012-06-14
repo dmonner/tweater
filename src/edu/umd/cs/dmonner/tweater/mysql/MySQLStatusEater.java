@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.plyjy.factory.JythonObjectFactory;
+
 import twitter4j.GeoLocation;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
@@ -18,15 +20,8 @@ import twitter4j.UserMentionEntity;
 import edu.umd.cs.dmonner.tweater.BaseStatusEater;
 import edu.umd.cs.dmonner.tweater.QueryItem;
 import edu.umd.cs.dmonner.tweater.QueryItem.Type;
-import edu.umd.cs.dmonner.tweater.QueryPhrase;
-import edu.umd.cs.dmonner.tweater.QueryTrack;
+import edu.umd.cs.dmonner.tweater.util.SentimentAnalyzer;
 import edu.umd.cs.dmonner.tweater.util.Util;
-
-// import python libraries
-import org.python.util.PythonInterpreter;
-import org.plyjy.factory.JythonObjectFactory;
-import org.geonames.WebService;
-import org.jython.book.interfaces.SentimentAnalyzer;
 
 /**
  * This class persists statuses to a MySQL database.
@@ -43,6 +38,10 @@ public class MySQLStatusEater extends BaseStatusEater
 	 * The maximum number of times to try a transaction before giving up
 	 */
 	private final int MAX_TRIES = 5;
+	/**
+	 * A utility for analyzing sentiment
+	 */
+	private final SentimentAnalyzer analyzer;
 
 	/**
 	 * @param id
@@ -54,6 +53,8 @@ public class MySQLStatusEater extends BaseStatusEater
 	{
 		super(id);
 		this.ds = ds;
+		this.analyzer = (SentimentAnalyzer) JythonObjectFactory.createObject(SentimentAnalyzer.class,
+				"SentimentAnalyzerP");
 	}
 
 	/**
@@ -307,6 +308,9 @@ public class MySQLStatusEater extends BaseStatusEater
 
 		final User user = status.getUser();
 
+		// get sentiment information
+		final double sentiment = analyzer.process(status.getText());
+
 		// get location information
 		final GeoLocation loc = status.getGeoLocation();
 		final double lat = loc == null ? 0D : loc.getLatitude();
@@ -360,6 +364,7 @@ public class MySQLStatusEater extends BaseStatusEater
 				"user_id, " + //
 				"status_date, " + //
 				"status_text, " + //
+				"status_sentiment, " + //
 				"status_is_retweet, " + //
 				"status_retweet_of, " + //
 				"status_retweet_count, " + //
@@ -370,6 +375,7 @@ public class MySQLStatusEater extends BaseStatusEater
 				user.getId() + ", " + //
 				status.getCreatedAt().getTime() + ", '" + //
 				scrub(status.getText()) + "', " + //
+				sentiment + ", " + //
 				rt + ", " + //
 				rtid + ", " + //
 				rtct + ", " + //
@@ -379,32 +385,18 @@ public class MySQLStatusEater extends BaseStatusEater
 		// SQL to insert QueryItem matches
 		for(final QueryItem match : matches)
 		{
-			final String table;
-			double sentiment = Double.NaN;
+			String table = null;
 			if(match.type == Type.TRACK)
-			{
-				table = "track_match(query_track_no, status_id, status_sentiment)";
-				sentiment = analyzer.process(status.getText(), ((QueryTrack) match).string);
-			}
+				table = "track_match(query_track_no, status_id)";
 			else if(match.type == Type.PHRASE)
-			{
-				table = "phrase_match(query_phrase_no, status_id, status_sentiment)";
-				sentiment = analyzer.process(status.getText(), ((QueryPhrase) match).string);
-			}
+				table = "phrase_match(query_phrase_no, status_id)";
 			else if(match.type == Type.FOLLOW)
-			{
-				table = "follow_match(query_follow_no, status_id, status_sentiment)";
-				sentiment = analyzer.process(status.getText());
-			}
+				table = "follow_match(query_follow_no, status_id)";
 			else
-			{
 				log.warning("Unhandled match type: " + match.type);
-				continue;
-			}
 
-			sqls.add("INSERT INTO " + table + " VALUES (" + match.id + //
-					", " + status.getId() + ", " + //
-					(sentiment != Double.NaN ? sentiment : "") + ");");
+			if(table != null)
+				sqls.add("INSERT INTO " + table + " VALUES (" + match.id + ", " + status.getId() + ");");
 		}
 
 		// SQL to insert hashtag entities

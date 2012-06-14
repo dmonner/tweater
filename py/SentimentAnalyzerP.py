@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import with_statement
-from org.jython.book.interfaces import SentimentAnalyzer
+from edu.umd.cs.dmonner.tweater.util import SentimentAnalyzer
 import pickle
 import re
 #import re2 #@UnresolvedImport
@@ -110,7 +110,7 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
     # make the feature data structure
     return feats
 
-  def process(self, text, query = None):
+  def process(self, text):
     try:
       # hack to skip statuses that have weird non-unicode text in them;
       # these can cause problems down the line for the regexes in featurify()
@@ -124,14 +124,6 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
         except UnicodeDecodeError:
           print "Unicode error on status; skipping."
           sys.stdout.flush()
-
-      if query != None:
-          # remove the query from the text
-          try:
-            q_index = text.index(query)
-            text = text[:q_index] + text[q_index + len(query):]
-          except Exception:
-            pass
 
       # featurify the text, using only the features in the master list
       statfeat = {}
