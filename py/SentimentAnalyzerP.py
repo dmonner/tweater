@@ -6,10 +6,12 @@ from edu.umd.cs.dmonner.tweater.util import SentimentAnalyzer
 import pickle
 import re
 #import re2 #@UnresolvedImport
+import os
 import sys
 import time
 from time_limit import TimeoutException, time_limit #@UnresolvedImport
 import traceback
+import nltk
 from nltk.corpus import stopwords #@UnresolvedImport
 
 class SentimentAnalyzerP(SentimentAnalyzer, object):
@@ -32,6 +34,8 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
     #link_replacer = re2.compile(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))')
     self.caps_finder = re.compile(r'(\b[A-Z]{4,})\b')
     self.lol_reducer = re.compile(r'\b[aeo]*h[aeo]+(h+[aeo]*)*\b|\bl(o+l+)+s*z*(e?d)?\b|\brofls*z*(e?d)?\b|\blu+l+s*z*(e?d)?\b|\blmf+a+o+\b')
+    
+    nltk.data.path.append("%s/py/nltk_data" % os.getcwd())
     self.stopwords_dict = [(x, True) for x in stopwords.words()]
     ##### IMPORT THE SENTIMENT CLASSIFIER #####
     try:
