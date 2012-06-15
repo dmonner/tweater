@@ -30,8 +30,8 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
     self.gt_replacer = re.compile(r'&gt;')
     self.lt_replacer = re.compile(r'&lt;')
     self.mention_replacer = re.compile(r'@\w+')
-    self.link_replacer = re.compile(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))')
-    #link_replacer = re2.compile(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))')
+    self.link_replacer = re.compile(r'\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))')
+    #self.link_replacer = re.compile(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))')
     self.caps_finder = re.compile(r'(\b[A-Z]{4,})\b')
     self.lol_reducer = re.compile(r'\b[aeo]*h[aeo]+(h+[aeo]*)*\b|\bl(o+l+)+s*z*(e?d)?\b|\brofls*z*(e?d)?\b|\blu+l+s*z*(e?d)?\b|\blmf+a+o+\b')
     
@@ -131,11 +131,11 @@ class SentimentAnalyzerP(SentimentAnalyzer, object):
 
       # featurify the text, using only the features in the master list
       statfeat = {}
-      try:
-        with time_limit(10):
-          statfeat = self.featurify(text, self.masterfeats)
-      except TimeoutException:
-        print "Featurify timed out for status_id %i" % row['id']
+      #try:
+      #  with time_limit(10):
+      statfeat = self.featurify(text, self.masterfeats)
+      #except TimeoutException:
+      #  print "Featurify timed out for status_id %i" % row['id']
 
       if len(statfeat) > 0:
         result = self.classifier.prob_classify(statfeat)

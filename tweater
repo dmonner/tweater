@@ -43,6 +43,7 @@ if [ "$1" == "start" ]
 then
 	# Run the program with nohup, &, and Xmx to start a new instance
 	nohup java -server -Xmx${MEMORY} -cp "${CP}" \
+	        -XX:-UseGCOverheadLimit \
 	        -Djava.rmi.server.codebase="file://${JARPATH}" \
 	        -Djava.util.logging.config.file=logging.properties \
 		-Dfile.encoding=UTF-8 \
