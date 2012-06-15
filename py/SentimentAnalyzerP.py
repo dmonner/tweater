@@ -1,18 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from __future__ import with_statement
 from edu.umd.cs.dmonner.tweater.util import SentimentAnalyzer
 import pickle
 import re
-#import re2 #@UnresolvedImport
 import os
 import sys
 import time
-from time_limit import TimeoutException, time_limit #@UnresolvedImport
 import traceback
 import nltk
-from nltk.corpus import stopwords #@UnresolvedImport
+from nltk.corpus import stopwords
 
 class SentimentAnalyzerP(SentimentAnalyzer, object):
   ''' Sentiment Analyzer Utility '''
