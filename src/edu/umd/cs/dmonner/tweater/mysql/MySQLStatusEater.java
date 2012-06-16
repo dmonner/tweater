@@ -18,6 +18,7 @@ import twitter4j.UserMentionEntity;
 import edu.umd.cs.dmonner.tweater.BaseStatusEater;
 import edu.umd.cs.dmonner.tweater.QueryItem;
 import edu.umd.cs.dmonner.tweater.QueryItem.Type;
+import edu.umd.cs.dmonner.tweater.util.Properties;
 import edu.umd.cs.dmonner.tweater.util.SentimentAnalyzer;
 import edu.umd.cs.dmonner.tweater.util.Util;
 
@@ -47,11 +48,15 @@ public class MySQLStatusEater extends BaseStatusEater
 	 * @param ds
 	 *          A handle on the MySQL database connection poor
 	 */
-	public MySQLStatusEater(final String id, final DataSource ds)
+	public MySQLStatusEater(final String id, final Properties prop, final DataSource ds)
 	{
 		super(id);
 		this.ds = ds;
-		this.analyzer = Util.getSentimentAnalyzer();
+
+		if(prop.getBooleanProperty("tweater.eater.useSentimentAnalysis"))
+			this.analyzer = Util.getSentimentAnalyzer();
+		else
+			this.analyzer = null;
 	}
 
 	/**
@@ -306,7 +311,7 @@ public class MySQLStatusEater extends BaseStatusEater
 		final User user = status.getUser();
 
 		// get sentiment information
-		final double sentiment = analyzer.process(status.getText());
+		final double sentiment = analyzer == null ? 0D : analyzer.process(status.getText());
 
 		// get location information
 		final GeoLocation loc = status.getGeoLocation();

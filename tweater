@@ -3,8 +3,10 @@
 # Set the amount of memory TwEater can use. You might need more if your queries generate tweets
 # faster than they can be written to disk. If your queries generate bursts of 500 tweets per minute
 # or more, you should consider increasing the memory parameter to leave more room for caching
-# tweets in RAM while they are waiting to be written to disk.
-MEMORY="256m"
+# tweets in RAM while they are waiting to be written to disk. If you are running only low-volume
+# queries and you have turned off sentiment analysis, you can safely decrease this some, probably 
+# as far as 256m.
+MEMORY="1024m"
 
 # This specifies the name of jar file that TwEater resides in. You may have to change this if you're
 # compiling the code yourself.

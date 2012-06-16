@@ -63,12 +63,12 @@ public class Finder extends Thread implements FinderControl
 	public static void main(final String[] args) throws Exception
 	{
 		final String usage = "USAGE:\n" + //
-			"finder start <file.properties> <machines.cfg>\n" + //
-			"                           // start a new Finder instance\n" + //
-			"finder add <ids.txt>       // adds a list of tweet IDs to be processed\n" + //
-			"finder size                // print the number of IDs remaining\n" + //
-			"finder dump                // write all remaining IDs to stdout\n" + //
-			"finder stop                // stop the existing Finder instance\n";
+				"finder start <file.properties> <machines.cfg>\n" + //
+				"                           // start a new Finder instance\n" + //
+				"finder add <ids.txt>       // adds a list of tweet IDs to be processed\n" + //
+				"finder size                // print the number of IDs remaining\n" + //
+				"finder dump                // write all remaining IDs to stdout\n" + //
+				"finder stop                // stop the existing Finder instance\n";
 
 		// If given no command, print the usage message
 		if(args.length < 1)
@@ -92,8 +92,8 @@ public class Finder extends Thread implements FinderControl
 		{
 			final String idfile = args[1];
 
-			final FinderControl remote =
-				(FinderControl)LocateRegistry.getRegistry(Util.getHost()).lookup(id);
+			final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(Util.getHost())
+					.lookup(id);
 			final List<Long> ids = readIDFile(idfile);
 			remote.add(ids);
 			System.out.println("Successfully added " + ids.size() + " Tweet IDs.");
@@ -101,24 +101,24 @@ public class Finder extends Thread implements FinderControl
 		// If asked for size, print the current queue size and number of outstanding requeusts
 		else if(args[0].equalsIgnoreCase("size"))
 		{
-			final FinderControl remote =
-				(FinderControl)LocateRegistry.getRegistry(Util.getHost()).lookup(id);
+			final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(Util.getHost())
+					.lookup(id);
 			System.out.println("Queue Size: " + remote.size());
 			System.out.println("Outstanding Requests: " + remote.sent());
 		}
 		// If asked to dump, print a list of all status IDs remaining, including outstanding requests
 		else if(args[0].equalsIgnoreCase("dump"))
 		{
-			final FinderControl remote =
-				(FinderControl)LocateRegistry.getRegistry(Util.getHost()).lookup(id);
+			final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(Util.getHost())
+					.lookup(id);
 			for(final Long id : remote.dump())
 				System.out.println(id);
 		}
 		// If told to stop, shut down the Finder and all FinderWorkers it's in contact with
 		else if(args[0].equalsIgnoreCase("stop"))
 		{
-			final FinderControl remote =
-				(FinderControl)LocateRegistry.getRegistry(Util.getHost()).lookup(id);
+			final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(Util.getHost())
+					.lookup(id);
 			remote.shutdown();
 			System.out.println("Shutting down the finder.");
 		}
@@ -233,7 +233,7 @@ public class Finder extends Thread implements FinderControl
 		this.log.info("Initializing " + id);
 
 		// Register to allow remote access
-		final FinderControl stub = (FinderControl)UnicastRemoteObject.exportObject(this, port);
+		final FinderControl stub = (FinderControl) UnicastRemoteObject.exportObject(this, port);
 		LocateRegistry.getRegistry().rebind(id, stub);
 		log.info("Registered " + id + " successfully on " + host + ", port " + port);
 
@@ -243,11 +243,11 @@ public class Finder extends Thread implements FinderControl
 		if(dbtype.equals("mysql"))
 		{
 			final String driverclass = "com.mysql.jdbc.Driver";
-			DriverManager.registerDriver((Driver)Class.forName(driverclass).newInstance());
+			DriverManager.registerDriver((Driver) Class.forName(driverclass).newInstance());
 			final DBPoolDataSource ds = new DBPoolDataSource();
 			ds.setDriverClassName(driverclass);
 			ds.setUrl("jdbc:" + dbtype + "://" + prop.getProperty("tweater.mysql.host") + "/"
-				+ prop.getProperty("tweater.mysql.name") + "?continueBatchOnError=false");
+					+ prop.getProperty("tweater.mysql.name") + "?continueBatchOnError=false");
 			ds.setUser(prop.getProperty("tweater.mysql.user"));
 			ds.setPassword(prop.getProperty("tweater.mysql.pass"));
 			ds.setMinPool(Integer.parseInt(prop.getProperty("tweater.mysql.minConnections")));
@@ -257,7 +257,7 @@ public class Finder extends Thread implements FinderControl
 			ds.setValidatorClassName("snaq.db.AutoCommitValidator");
 
 			builder = new MySQLQueryBuilder(id, prop, ds);
-			eater = new MySQLStatusEater(id, ds);
+			eater = new MySQLStatusEater(id, prop, ds);
 		}
 		else if(dbtype.equals("csv"))
 		{
@@ -267,7 +267,7 @@ public class Finder extends Thread implements FinderControl
 				outfile = prop.getProperty("tweater.csv.outfile");
 
 			builder = new CSVQueryBuilder(id, prop);
-			eater = new CSVStatusEater(id, new PrintWriter(new FileWriter(outfile, true), true));
+			eater = new CSVStatusEater(id, prop, new PrintWriter(new FileWriter(outfile, true), true));
 		}
 		else
 		{
@@ -290,6 +290,7 @@ public class Finder extends Thread implements FinderControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderControl#add(java.util.List)
 	 */
+	@Override
 	public void add(final List<Long> ids)
 	{
 		synchronized(idqueue)
@@ -304,6 +305,7 @@ public class Finder extends Thread implements FinderControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderControl#dump()
 	 */
+	@Override
 	public List<Long> dump()
 	{
 		synchronized(idqueue)
@@ -323,6 +325,7 @@ public class Finder extends Thread implements FinderControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderControl#ignore(long)
 	 */
+	@Override
 	public void ignore(final long status_id)
 	{
 		log.finer("Instructed by worker to ignore status id " + status_id + " because of null result.");
@@ -334,6 +337,7 @@ public class Finder extends Thread implements FinderControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderControl#process(twitter4j.Status)
 	 */
+	@Override
 	public void process(final Status status)
 	{
 		log.finest("Received status id " + status.getId() + " from worker to process.");
@@ -415,8 +419,8 @@ public class Finder extends Thread implements FinderControl
 						log.finest("Attempting to contact " + host + ".");
 
 						// Find the worker remotely
-						final FinderWorkerControl remote =
-							(FinderWorkerControl)LocateRegistry.getRegistry(host).lookup(FinderWorker.id);
+						final FinderWorkerControl remote = (FinderWorkerControl) LocateRegistry.getRegistry(
+								host).lookup(FinderWorker.id);
 
 						// See how many status IDs they want
 						final int want = remote.want();
@@ -435,7 +439,7 @@ public class Finder extends Thread implements FinderControl
 								// Filter out statuses we already have by checking MySQL; this is to minimize
 								// the # of requests to Twitter, and thus the runtime for finding a set
 								if(eater instanceof MySQLStatusEater)
-									skip = ((MySQLStatusEater)eater).has(status_id);
+									skip = ((MySQLStatusEater) eater).has(status_id);
 
 								if(!skip)
 									toSend.add(status_id);
@@ -484,7 +488,7 @@ public class Finder extends Thread implements FinderControl
 
 			try
 			{
-				Thread.sleep((int)(2000.0 + Math.random() * 1000.0));
+				Thread.sleep((int) (2000.0 + Math.random() * 1000.0));
 			}
 			catch(final InterruptedException ex)
 			{
@@ -499,8 +503,8 @@ public class Finder extends Thread implements FinderControl
 		{
 			try
 			{
-				final FinderWorkerControl remote =
-					(FinderWorkerControl)LocateRegistry.getRegistry(host).lookup(FinderWorker.id);
+				final FinderWorkerControl remote = (FinderWorkerControl) LocateRegistry.getRegistry(host)
+						.lookup(FinderWorker.id);
 				remote.shutdown();
 				log.info("Shutdown worker on " + host);
 			}
@@ -542,6 +546,7 @@ public class Finder extends Thread implements FinderControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderControl#sent()
 	 */
+	@Override
 	public int sent()
 	{
 		synchronized(sent)
@@ -561,6 +566,7 @@ public class Finder extends Thread implements FinderControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderControl#size()
 	 */
+	@Override
 	public int size()
 	{
 		synchronized(idqueue)

@@ -8,6 +8,7 @@ import twitter4j.Status;
 import twitter4j.User;
 import edu.umd.cs.dmonner.tweater.BaseStatusEater;
 import edu.umd.cs.dmonner.tweater.QueryItem;
+import edu.umd.cs.dmonner.tweater.util.Properties;
 import edu.umd.cs.dmonner.tweater.util.SentimentAnalyzer;
 import edu.umd.cs.dmonner.tweater.util.Util;
 
@@ -33,12 +34,16 @@ public class CSVStatusEater extends BaseStatusEater
 	 * @param outfile
 	 *          A handle on the output file
 	 */
-	public CSVStatusEater(final String id, final PrintWriter outfile)
+	public CSVStatusEater(final String id, final Properties prop, final PrintWriter outfile)
 	{
 		super(id);
 
 		this.outfile = outfile;
-		this.analyzer = Util.getSentimentAnalyzer();
+
+		if(prop.getBooleanProperty("tweater.eater.useSentimentAnalysis"))
+			this.analyzer = Util.getSentimentAnalyzer();
+		else
+			this.analyzer = null;
 
 		// print the column headers to the output file
 		this.outfile.println("user_id, " + //
@@ -75,7 +80,7 @@ public class CSVStatusEater extends BaseStatusEater
 		final User user = status.getUser();
 
 		// get sentiment information
-		final double sentiment = analyzer.process(status.getText());
+		final double sentiment = analyzer == null ? 0D : analyzer.process(status.getText());
 
 		// get location information
 		final GeoLocation loc = status.getGeoLocation();

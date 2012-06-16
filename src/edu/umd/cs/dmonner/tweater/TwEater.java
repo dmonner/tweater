@@ -89,6 +89,11 @@ public class TwEater extends Thread implements TwEaterControl
 		prop.setProperty("tweater.builder.interval", "180", //
 				"Interval (in seconds) between QueryBuilder trips to the data source");
 
+		// Properties of the StatusEater
+
+		prop.setProperty("tweater.eater.useSentimentAnalysis", "true", //
+				"Sentiment-analyze tweets as they come in; incurs additional memory overhead");
+
 		// Properties of the tweet queue in StatusServer
 
 		prop.setProperty("tweater.queue.coreThreads", "50", //
@@ -113,9 +118,9 @@ public class TwEater extends Thread implements TwEaterControl
 				"Interval (in seconds) between log messages about resource limitations");
 		prop.setProperty("tweater.queue.resourceLimitEmailInterval", "3600", //
 				"Interval (in seconds) between email messages about resource limitations");
-		prop.setProperty("tweater.queue.resourceLimitMessageThreshold", "0.3", //
+		prop.setProperty("tweater.queue.resourceLimitMessageThreshold", "0.50", //
 				"Fraction of memory use above which to log resource limitations");
-		prop.setProperty("tweater.queue.resourceLimitEmailThreshold", "0.5", //
+		prop.setProperty("tweater.queue.resourceLimitEmailThreshold", "0.80", //
 				"Fraction of memory use above which to send email alerts about resource limitations");
 		prop.setProperty("tweater.queue.resourceLimitRejectionThreshold", "0.95", //
 				"Fraction of memory use above which to reject new statuses");
@@ -162,12 +167,12 @@ public class TwEater extends Thread implements TwEaterControl
 			System.exit(1);
 		}
 
-		// -- Check to make sure necessary properties have been provided
+		// -- Check to make sure necessary properties have been provided in the proper ranges
 
 		// OAuth properties
 
-		// prop.requireProperty("oauth.accessToken");
-		// prop.requireProperty("oauth.accessTokenSecret");
+		prop.requireProperty("oauth.accessToken");
+		prop.requireProperty("oauth.accessTokenSecret");
 		prop.requireProperty("oauth.consumerKey");
 		prop.requireProperty("oauth.consumerSecret");
 
@@ -449,19 +454,17 @@ public class TwEater extends Thread implements TwEaterControl
 			ds.setValidatorClassName("snaq.db.AutoCommitValidator");
 
 			builder = new MySQLQueryBuilder(id, prop, ds);
-			eater = new MySQLStatusEater(id, ds);
+			eater = new MySQLStatusEater(id, prop, ds);
 		}
 		else if(dbtype.equals("csv"))
 		{
 			String outfile = "results.csv";
 
 			if(prop.containsKey("tweater.csv.outfile"))
-			{
 				outfile = prop.getProperty("tweater.csv.outfile");
-			}
 
 			builder = new CSVQueryBuilder(id, prop);
-			eater = new CSVStatusEater(id, new PrintWriter(new FileWriter(outfile, true), true));
+			eater = new CSVStatusEater(id, prop, new PrintWriter(new FileWriter(outfile, true), true));
 		}
 		else
 		{

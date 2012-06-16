@@ -26,6 +26,10 @@ public class Properties extends java.util.Properties
 	 */
 	private String propfile = "<defaults>";
 	/**
+	 * Holds properties known to have boolean values
+	 */
+	private final Map<String, Boolean> boolprops;
+	/**
 	 * Holds properties known to have integer values
 	 */
 	private final Map<String, Integer> intprops;
@@ -48,6 +52,7 @@ public class Properties extends java.util.Properties
 	public Properties()
 	{
 		super();
+		boolprops = new HashMap<String, Boolean>();
 		intprops = new HashMap<String, Integer>();
 		floatprops = new HashMap<String, Float>();
 		comments = new HashMap<String, String>();
@@ -71,7 +76,8 @@ public class Properties extends java.util.Properties
 				intprops.put(key, Integer.parseInt(value));
 			}
 			catch(final NumberFormatException ex)
-			{}
+			{
+			}
 
 			// put it into floatprops map if it parses as a float
 			try
@@ -79,8 +85,33 @@ public class Properties extends java.util.Properties
 				floatprops.put(key, Float.parseFloat(value));
 			}
 			catch(final NumberFormatException ex)
-			{}
+			{
+			}
 		}
+	}
+
+	/**
+	 * Gets an existing property as a <code>boolean</code>.
+	 * 
+	 * @param name
+	 *          Name of the property to get
+	 * @return Value of the property as a <code>boolean</code>
+	 * @throws NullPointerException
+	 *           If the property does not exist
+	 * @throws NumberFormatException
+	 *           If the property exists but cannot be converted to a <code>boolean</code>
+	 */
+	public boolean getBooleanProperty(final String name)
+	{
+		if(!boolprops.containsKey(name))
+		{
+			final String s = getProperty(name);
+			final boolean value = s.equalsIgnoreCase("true") || s.equalsIgnoreCase("t")
+					|| s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("y") || s.equals("1");
+			boolprops.put(name, value);
+		}
+
+		return boolprops.get(name);
 	}
 
 	/**
@@ -195,17 +226,17 @@ public class Properties extends java.util.Properties
 
 			if(value < min || value > max)
 				throw new IllegalArgumentException("Value for property " + name
-					+ " must be a float in the range [" + min + ", " + max + "] in " + propfile);
+						+ " must be a float in the range [" + min + ", " + max + "] in " + propfile);
 		}
 		catch(final NullPointerException ex)
 		{
 			throw new IllegalArgumentException("Value for property " + name
-				+ " must exist and be a float in " + propfile);
+					+ " must exist and be a float in " + propfile);
 		}
 		catch(final NumberFormatException ex)
 		{
 			throw new IllegalArgumentException("Value for property " + name + " must be a float in "
-				+ propfile);
+					+ propfile);
 		}
 	}
 
@@ -262,17 +293,17 @@ public class Properties extends java.util.Properties
 
 			if(value < min || value > max)
 				throw new IllegalArgumentException("Value for property " + name
-					+ " must be an integer in the range [" + min + ", " + max + "] in " + propfile);
+						+ " must be an integer in the range [" + min + ", " + max + "] in " + propfile);
 		}
 		catch(final NullPointerException ex)
 		{
 			throw new IllegalArgumentException("Value for property " + name
-				+ " must exist and be an integer in " + propfile);
+					+ " must exist and be an integer in " + propfile);
 		}
 		catch(final NumberFormatException ex)
 		{
 			throw new IllegalArgumentException("Value for property " + name + " must be an integer in "
-				+ propfile);
+					+ propfile);
 		}
 	}
 
@@ -288,7 +319,7 @@ public class Properties extends java.util.Properties
 	{
 		if(!containsKey(name) || getProperty(name).trim().isEmpty())
 			throw new IllegalArgumentException("Missing value for required property " + name + " in "
-				+ propfile);
+					+ propfile);
 	}
 
 	/*
