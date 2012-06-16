@@ -6,6 +6,10 @@
 # tweets in RAM while they are waiting to be written to disk.
 MEMORY="256m"
 
+# This specifies the name of jar file that TwEater resides in. You may have to change this if you're
+# compiling the code yourself.
+JARNAME="tweater"
+
 #------------------------------------------------------------------------------
 # EDIT BELOW THIS LINE AT YOUR OWN RISK ---------------------------------------
 #------------------------------------------------------------------------------
@@ -26,16 +30,10 @@ else
   SEP=":"
 fi
 
-# Figure out where the project's JAR file is
-# IF using precompiled class files (default)
-PROJECT="tweater"
-# IF compiling yourself
-#PROJECT=`pwd | sed 's/\([^\\/]*\\/\)*\([^\\/]*\)/\\2/'`
-
 # Set the classpath and jarpath
 DIR="`pwd`"
 CP="`find "${DIR}/build/dist" -iname *.jar | tr "\n" "${SEP}"`"
-JARPATH="${DIR}/build/dist/${PROJECT}.jar"
+JARPATH="${DIR}/build/dist/${JARNAME}.jar"
 
 # Check whether the first argument is "start" or something else
 ARG=`echo "$1" | tr '[A-Z]' '[a-z]'`
