@@ -1,8 +1,13 @@
 #!/bin/bash
 
-# Set the amount of memory each instance can use for it's StatusQueue
-MEMORY="2048m"
+# Set the amount of memory TwEater can use. You might need more if your queries generate tweets
+# faster than they can be written to disk. If your queries generate bursts of 500 tweets per minute
+# or more, you should consider increasing the memory parameter to leave more room for caching
+# tweets in RAM while they are waiting to be written to disk.
+MEMORY="256m"
 
+#------------------------------------------------------------------------------
+# EDIT BELOW THIS LINE AT YOUR OWN RISK ---------------------------------------
 #------------------------------------------------------------------------------
 
 # Make sure that RMIRegistry is up and running
