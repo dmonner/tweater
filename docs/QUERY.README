@@ -1,13 +1,27 @@
+QUERY TYPES
+
+TwEater offers three kinds of queries that you can use: track, phrase, and follow. You can have up to 400 total track/phrase queries running at once, and up to 5000 follow queries in addition to those. Queries will never return tweets from protected users.
+
+Track Queries:
+A track query is a case-insensitive bag-of-words query, meaning that to match it, a tweet must contain ALL the words you specify, but ordering does not matter. A word, for our purposes, is a token delimited by whitespace, so when specifying a track query for TwEater, assume that the string you submit will be split based on whitespace and the remaining tokens will be the words that constitute your query. See the section below on query construction for caveats about what constitutes a word on Twitter's end.
+
+Phrase Queries:
+A phrase query is a case-insensitive exact string match that may include whitespace. Only tweets that contain the entire, exact string will match this kind of query.
+
+Follow Queries:
+For a follow query you must specify the user ID of a single Twitter user. A follow query for user ID 123 will return all tweets that user 123 publishes after the query was launched, which includes replies from user 123 to others and retweets that 123 makes of other users' tweets. It also contains any direct "official" replies to user 123 or any "official" retweets of user 123. The query will NOT return "manual" mentions of, replies to, or retweets of user 123. If you have the username and need the ID (i.e. a number), try this site: http://idfromuser.com/
+
 QUERY CONSTRUCTION
 
 Twitter queries are case-INsensitive and are specified as sets of whitespace-separated keywords, ALL of much must be present in a tweet for it to be sent to you. Twitter does not support phrases of whitespace-separated keywords, but TwEater adds this functionality by submitting a normal query and discarding any tweets sent back that do not match the phrase in full. Thus, one must make sure that phrase queries, when construed as keywords-anywhere queries by Twitter, are not too broad, and would in fact return tweets containing the phrase in question, as detailed below.
 
 When considering keywords-anywhere queries, Twitter does NOT simply do substring matching on tweets. Instead, they break each tweet up based on whitespace and put them into a hashtable so they can ask questions like "is X in the tweet?" where X is a specific, exact keyword.
 
-Thus, queries you specify are broken up into keywords based on whitespace, and Twitter searches for tweets with each keyword individually. For example, if your query is "odoyle rules", Twitter determines whether to send a given tweet to you by asking if it contains "odoyle" first, and if it does, then asking whether it also contains "rules". If it contained both, the tweet gets sent to you. So for the keywords-anywhere query "odoyle rules":
+Thus, queries you specify are broken up into keywords based on whitespace, and Twitter searches for tweets with each keyword individually. For example, if your query is "odoyle rules", Twitter determines whether to send a given tweet to you by asking if it contains "odoyle", and if it does, then asking whether it also contains "rules". If it contains both, the tweet gets sent to you. So for the track query (i.e. keywords anywhere in a tweet, in any order) "odoyle rules":
 
 "Odoyle rules ... heh heh ... Love that movie." matches;
 "Hey Odoyle, check out the new rules posted at the gym" matches;
+"Check out those rules... They're going to be tough for ODoyle!" also matches;
 "Class, here are the new rules" does not match.
 
 Note that ONLY EXACT keyword matches are returned. There is no substring matching or stemming. Thus:
