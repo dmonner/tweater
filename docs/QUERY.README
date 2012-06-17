@@ -9,7 +9,7 @@ Phrase Queries:
 A phrase query is a case-insensitive exact string match that may include whitespace. Only tweets that contain the entire, exact string will match this kind of query.
 
 Follow Queries:
-For a follow query you must specify the user ID of a single Twitter user. A follow query for user ID 123 will return all tweets that user 123 publishes after the query was launched, which includes replies from user 123 to others and retweets that 123 makes of other users' tweets. It also contains any direct "official" replies to user 123 or any "official" retweets of user 123. The query will NOT return "manual" mentions of, replies to, or retweets of user 123. If you have the username and need the ID (i.e. a number), try this site: http://idfromuser.com/
+For a follow query you must specify the user ID of a single Twitter user. A follow query for user ID 123 will return all tweets that user 123 publishes after the query was launched, which includes replies from user 123 to others and retweets that 123 makes of other users' tweets. It also contains any direct "official" replies to user 123 or any "official" retweets of user 123. The query will NOT return "manual" mentions of, replies to, or retweets of user 123; this is a limitation of the Twitter Streaming API (see https://dev.twitter.com/docs/streaming-apis/parameters#follow for more information). If you want to find these missing tweets, you should issue a track query on the "@username". The only downside to this strategy is that you are limited to 400 such track queries instead of the 5000-limit for follow queries. If you have the username and need the ID (i.e. a number), try this site: http://idfromuser.com/
 
 QUERY CONSTRUCTION
 
