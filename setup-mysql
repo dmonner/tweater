@@ -1,5 +1,16 @@
 #!/usr/bin/python
 
+VERSION_5_5_OR_LATER = True
+
+if VERSION_5_5_OR_LATER:
+  # for MySQL 5.5, to handle 4-byte UTF-8
+  charset = "utf8mb4"
+  charcol = "utf8mb4_unicode_ci"
+else:
+  # for MySQL 5.1 and earlier
+  charset = "utf8" 
+  charcol = "utf8_general_ci"
+
 dbname = raw_input("Name of MySQL database to be created: ")
 dbuser = raw_input("Name of MySQL user to be created: ")
 dbpass = raw_input("Password for MySQL user %s: " % dbuser)
@@ -27,7 +38,7 @@ DROP DATABASE IF EXISTS %(dbname)s;
 GRANT USAGE ON *.* TO '%(dbuser)s'@'localhost'; # Hack to work around lack of "drop user if exists"
 DROP USER '%(dbuser)s'@'localhost';
 CREATE USER '%(dbuser)s'@'localhost' IDENTIFIED BY '%(dbpass)s';
-CREATE DATABASE %(dbname)s CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE %(dbname)s CHARACTER SET %(charset)s COLLATE %(charcol)s;
 GRANT ALL PRIVILEGES ON %(dbname)s.* TO '%(dbuser)s'@'localhost';
 FLUSH PRIVILEGES;
 USE %(dbname)s;
@@ -79,14 +90,14 @@ CREATE TABLE user (
   row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
   user_id INTEGER NOT NULL,
   user_info_from_status BIGINT NOT NULL,
-  user_name VARCHAR(30) NOT NULL,
+  user_name VARCHAR(100) NOT NULL,
   user_join_date BIGINT NOT NULL,
   user_status_count INTEGER NOT NULL,
   user_followers INTEGER NOT NULL,
   user_friends INTEGER NOT NULL,
   user_listed INTEGER NOT NULL,
   user_verified BOOL NOT NULL,
-  user_lang VARCHAR(3) NOT NULL,
+  user_lang VARCHAR(30) NOT NULL,
   user_location VARCHAR(256) NOT NULL,
   user_utc_offset INTEGER NOT NULL,
   PRIMARY KEY(user_id, user_info_from_status))

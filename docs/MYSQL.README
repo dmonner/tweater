@@ -1,6 +1,16 @@
 MYSQL INSTALLATION AND USE
 
-First run:
+If you are using a MySQL version before 5.5, open up the "setup-mysql" script and find the line near the top that says:
+
+VERSION_5_5_OR_LATER = True
+
+And change it to:
+
+VERSION_5_5_OR_LATER = False
+
+If you're using MySQL 5.5 or later, you don't have to change anything!
+
+Now we run that script to generate our MySQL database setup script:
 
 $ ./setup-mysql
 
