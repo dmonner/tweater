@@ -106,6 +106,8 @@ public class Properties extends java.util.Properties
 		if(!boolprops.containsKey(name))
 		{
 			final String s = getProperty(name);
+			if(s == null)
+				throw new NullPointerException("Key " + name + " is null.");
 			final boolean value = s.equalsIgnoreCase("true") || s.equalsIgnoreCase("t")
 					|| s.equalsIgnoreCase("yes") || s.equalsIgnoreCase("y") || s.equals("1");
 			boolprops.put(name, value);
@@ -128,7 +130,19 @@ public class Properties extends java.util.Properties
 	public float getFloatProperty(final String name)
 	{
 		if(!floatprops.containsKey(name))
-			floatprops.put(name, Float.parseFloat(getProperty(name)));
+		{
+			final String s = getProperty(name);
+			if(s == null)
+				throw new NullPointerException("Key " + name + " is null.");
+			try
+			{
+				floatprops.put(name, Float.parseFloat(s));
+			}
+			catch(final NumberFormatException ex)
+			{
+				throw new NumberFormatException("Key " + name + " is not a valid float:" + s);
+			}
+		}
 
 		return floatprops.get(name);
 	}
@@ -147,7 +161,19 @@ public class Properties extends java.util.Properties
 	public int getIntegerProperty(final String name)
 	{
 		if(!intprops.containsKey(name))
-			intprops.put(name, Integer.parseInt(getProperty(name)));
+		{
+			final String s = getProperty(name);
+			if(s == null)
+				throw new NullPointerException("Key " + name + " is null.");
+			try
+			{
+				intprops.put(name, Integer.parseInt(s));
+			}
+			catch(final NumberFormatException ex)
+			{
+				throw new NumberFormatException("Key " + name + " is not a valid integer:" + s);
+			}
+		}
 
 		return intprops.get(name);
 	}
