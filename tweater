@@ -52,7 +52,7 @@ then
 	        -Djava.rmi.server.codebase="file://${JARPATH}" \
 	        -Djava.util.logging.config.file=logging.properties \
 		-Dfile.encoding=UTF-8 \
-	        edu.umd.cs.dmonner.tweater.TwEater "$@" &> tweater.log &  
+	        edu.umd.cs.dmonner.tweater.TwEater "$@" > tweater.log 2>&1 &  
 else
 	# Run the program in single-interaction mode 
 	java -server -cp "${CP}" \
