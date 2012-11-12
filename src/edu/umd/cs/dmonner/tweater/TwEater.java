@@ -46,6 +46,12 @@ public class TwEater extends Thread implements TwEaterControl
 		prop.setProperty("tweater.logging.level", "INFO", //
 				"Granularity of log messages; valid values (from rarest to most frequent) are: " + //
 						"SEVERE, WARNING, INFO, FINE, FINER, FINEST");
+		prop.setProperty("tweater.logging.maxLogSizeMB", "10", //
+				"Maximum size of a TwEater log file.");
+		prop.setProperty("tweater.logging.maxLogs", "10", //
+				"Maximum number of Tweater log files. After this many logs reach the maximum size, " + //
+						"the first file will be overwritten. To avoid this, set a large maxLogs and/or " + //
+						"maxLogSizeMB, or turn down your logging level. Beware filling your disk!");
 
 		// Properties specific to CSV configuration
 
@@ -427,7 +433,9 @@ public class TwEater extends Thread implements TwEaterControl
 
 		// -- Initial logging configuration
 		log = Logger.getLogger(id);
-		final Handler filehandler = new FileHandler(id + ".log", 100 * Util.MB, 1);
+		final int maxLogSizeMB = prop.getIntegerProperty("tweater.logging.maxLogSizeMB");
+		final int maxLogs = prop.getIntegerProperty("tweater.logging.maxLogs");
+		final Handler filehandler = new FileHandler(id + ".log", maxLogSizeMB * Util.MB, maxLogs);
 		filehandler.setFormatter(new OneLineFormatter());
 		log.addHandler(filehandler);
 		log.setLevel(Level.parse(prop.getProperty("tweater.logging.level")));
