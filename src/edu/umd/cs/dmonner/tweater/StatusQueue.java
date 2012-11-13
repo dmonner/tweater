@@ -98,6 +98,11 @@ public class StatusQueue extends Thread implements StatusListener
 	 */
 	private int trackLimitations = 0;
 	/**
+	 * Twitter sometimes loses the track limitation count if you disconnect. If we detect that
+	 * happening, we put the previous total here to add into the reported total.
+	 */
+	private int previousTrackLimitations = 0;
+	/**
 	 * The last time (in ms since the epoch) that a track-limitations message was logged; used to
 	 * prevent log spamming
 	 */
@@ -349,8 +354,15 @@ public class StatusQueue extends Thread implements StatusListener
 	@Override
 	public void onTrackLimitationNotice(final int numberOfLimitedStatuses)
 	{
-		log.finest("Track Limitation notice: " + numberOfLimitedStatuses);
+		// If we detect that Twitter has lost our track limitation count, save the old number
+		if(numberOfLimitedStatuses < trackLimitations)
+			previousTrackLimitations += trackLimitations;
+
+		// Also save the new number, and calculate the total
 		trackLimitations = numberOfLimitedStatuses;
+		final int totalTrackLimitations = previousTrackLimitations + trackLimitations;
+
+		log.finest("Track Limitation notice: " + totalTrackLimitations);
 		trackLimitMessageNeedsUpdate = true;
 	}
 
