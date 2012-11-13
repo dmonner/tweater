@@ -4,10 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.rmi.AccessException;
+import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -295,6 +298,10 @@ public class TwEater extends Thread implements TwEaterControl
 					{
 						ex.printStackTrace();
 					}
+					catch(final ConnectException ex)
+					{
+						rmiRemove(LocateRegistry.getRegistry(), name);
+					}
 					catch(final RemoteException ex)
 					{
 						ex.printStackTrace();
@@ -353,6 +360,10 @@ public class TwEater extends Thread implements TwEaterControl
 							index++;
 						}
 					}
+					catch(final ConnectException ex)
+					{
+						rmiRemove(LocateRegistry.getRegistry(), name);
+					}
 					catch(final NotBoundException ex)
 					{
 						ex.printStackTrace();
@@ -380,6 +391,27 @@ public class TwEater extends Thread implements TwEaterControl
 		else
 		{
 			System.out.print(usage);
+		}
+	}
+
+	private static void rmiRemove(final Registry registry, final String name)
+	{
+		System.out.println("Failed to connect to " + name + "; removing from registry.");
+		try
+		{
+			registry.unbind(name);
+		}
+		catch(final NotBoundException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(final AccessException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(final RemoteException ex)
+		{
+			ex.printStackTrace();
 		}
 	}
 
@@ -411,6 +443,7 @@ public class TwEater extends Thread implements TwEaterControl
 	 * The log file associated with this TwEater instance
 	 */
 	public final Logger log;
+
 	/**
 	 * Tells whether this TwEater instance is currently collecting data from Twitter, or shut down and
 	 * merely working through its backlog
