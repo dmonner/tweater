@@ -17,7 +17,7 @@ JARNAME="tweater"
 #------------------------------------------------------------------------------
 
 # Make sure that RMIRegistry is up and running
-rmiregistry &> /dev/null &
+rmiregistry -J-Djava.rmi.server.useCodebaseOnly=false &> /dev/null &
 
 # Figure out the operating system (in lower case)
 OS="`uname -s | tr '[A-Z]' '[a-z]'`"
