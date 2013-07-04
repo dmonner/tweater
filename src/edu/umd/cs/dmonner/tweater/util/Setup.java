@@ -11,8 +11,8 @@ import java.util.Properties;
 import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
-import twitter4j.http.AccessToken;
-import twitter4j.http.RequestToken;
+import twitter4j.auth.AccessToken;
+import twitter4j.auth.RequestToken;
 
 /**
  * Walks the user through the process of logging in to Twitter to obtain an access token, which is a
@@ -44,8 +44,7 @@ public class Setup
 	{
 		AccessToken accessToken = null;
 
-		final boolean missing =
-			prop.getProperty("oauth.accessToken") == null
+		final boolean missing = prop.getProperty("oauth.accessToken") == null
 				|| prop.getProperty("oauth.accessTokenSecret") == null;
 		boolean reset = false;
 
@@ -122,9 +121,8 @@ public class Setup
 		}
 		else
 		{
-			accessToken =
-				new AccessToken(prop.getProperty("oauth.accessToken"), prop
-					.getProperty("oauth.accessTokenSecret"));
+			accessToken = new AccessToken(prop.getProperty("oauth.accessToken"),
+					prop.getProperty("oauth.accessTokenSecret"));
 		}
 
 		// get an authorized Twitter instance
@@ -137,8 +135,7 @@ public class Setup
 	 */
 	public static void loadConsumerToken()
 	{
-		final boolean missing =
-			prop.getProperty("oauth.consumerKey") == null
+		final boolean missing = prop.getProperty("oauth.consumerKey") == null
 				|| prop.getProperty("oauth.consumerSecret") == null;
 		boolean reset = false;
 
@@ -193,8 +190,8 @@ public class Setup
 			savePropertiesFile();
 		}
 
-		tw.setOAuthConsumer(prop.getProperty("oauth.consumerKey"), prop
-			.getProperty("oauth.consumerSecret"));
+		tw.setOAuthConsumer(prop.getProperty("oauth.consumerKey"),
+				prop.getProperty("oauth.consumerSecret"));
 	}
 
 	/**
@@ -226,7 +223,8 @@ public class Setup
 					is.close();
 				}
 				catch(final Exception ex)
-				{}
+				{
+				}
 			}
 		}
 	}
@@ -251,11 +249,11 @@ public class Setup
 		tw = new TwitterStreamFactory().getInstance();
 		loadPropertiesFile();
 		System.out.print(//
-			"This program will help you acquire the necessary credentials for using the\n" + //
-				"Twitter Streaming API. There are two kinds of tokens needed: a Consumer Token\n" + //
-				"and an Access Token. The former may already be present in the properties file,\n" + //
-				"but the latter requires that you log in to Twitter and authorize TwEater.\n" + //
-				"This script will walk you through the process.\n");
+				"This program will help you acquire the necessary credentials for using the\n" + //
+						"Twitter Streaming API. There are two kinds of tokens needed: a Consumer Token\n" + //
+						"and an Access Token. The former may already be present in the properties file,\n" + //
+						"but the latter requires that you log in to Twitter and authorize TwEater.\n" + //
+						"This script will walk you through the process.\n");
 		loadConsumerToken();
 		loadAccessToken();
 		System.out.println("Properties file " + propfile + " updated.");
@@ -287,7 +285,8 @@ public class Setup
 					os.close();
 				}
 				catch(final Exception ex)
-				{}
+				{
+				}
 			}
 		}
 	}

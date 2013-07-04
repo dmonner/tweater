@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import snaq.db.DBPoolDataSource;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
-import twitter4j.http.AccessToken;
+import twitter4j.auth.AccessToken;
 import edu.umd.cs.dmonner.tweater.csv.CSVQueryBuilder;
 import edu.umd.cs.dmonner.tweater.csv.CSVStatusEater;
 import edu.umd.cs.dmonner.tweater.mysql.MySQLQueryBuilder;

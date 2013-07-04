@@ -13,7 +13,7 @@ public class QueryFollow extends QueryItem
 	/**
 	 * The user ID whose <code>Status</code>es this object will match.
 	 */
-	public final int userid;
+	public final long userid;
 
 	/**
 	 * Creates a new <code>QueryFollow</code> with the given group number, unique ID, and the user ID
@@ -23,7 +23,7 @@ public class QueryFollow extends QueryItem
 	 * @param id
 	 * @param userid
 	 */
-	public QueryFollow(final int group, final int id, final int userid)
+	public QueryFollow(final int group, final long id, final int userid)
 	{
 		super(Type.FOLLOW, group, id);
 		this.userid = userid;
@@ -43,7 +43,7 @@ public class QueryFollow extends QueryItem
 		if(result != 0)
 			return result;
 
-		return this.userid - ((QueryFollow)that).userid;
+		return (int) (this.userid - ((QueryFollow) that).userid);
 	}
 
 	/*
@@ -60,7 +60,7 @@ public class QueryFollow extends QueryItem
 		if(!result)
 			return result;
 
-		return this.userid == ((QueryFollow)other).userid;
+		return this.userid == ((QueryFollow) other).userid;
 	}
 
 	/*
@@ -71,7 +71,7 @@ public class QueryFollow extends QueryItem
 	@Override
 	public int hashCode()
 	{
-		return super.hashCode() + userid;
+		return super.hashCode() + (int) userid;
 	}
 
 	/*

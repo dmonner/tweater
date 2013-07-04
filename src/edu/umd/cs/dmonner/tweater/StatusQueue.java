@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 
+import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
@@ -304,8 +305,15 @@ public class StatusQueue extends Thread implements StatusListener
 	 * @see twitter4j.StatusListener#onScrubGeo(int, long)
 	 */
 	@Override
-	public void onScrubGeo(final int userId, final long upToStatusId)
+	public void onScrubGeo(final long userId, final long upToStatusId)
 	{
+	}
+
+	@Override
+	public void onStallWarning(final StallWarning warn)
+	{
+		// TODO: Implement something to do on StallWarnings
+		// See also: https://dev.twitter.com/docs/streaming-apis/parameters#stall_warnings
 	}
 
 	/*

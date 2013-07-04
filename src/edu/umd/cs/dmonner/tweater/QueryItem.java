@@ -46,16 +46,16 @@ public abstract class QueryItem implements Comparable<QueryItem>, Serializable
 	/**
 	 * A unique ID number for this <code>QueryItem</code>
 	 */
-	public final int id;
+	public final long id;
 
 	/**
 	 * Creates a <code>QueryItem</code> with the specified type, group number, and unique ID.
 	 * 
 	 * @param type
 	 * @param group
-	 * @param id
+	 * @param id2
 	 */
-	public QueryItem(final Type type, final int group, final int id)
+	public QueryItem(final Type type, final int group, final long id)
 	{
 		this.type = type;
 		this.group = group;
@@ -80,7 +80,7 @@ public abstract class QueryItem implements Comparable<QueryItem>, Serializable
 		if(result != 0)
 			return result;
 
-		result = this.id - that.id;
+		result = (int) (this.id - that.id);
 		if(result != 0)
 			return result;
 
@@ -97,7 +97,7 @@ public abstract class QueryItem implements Comparable<QueryItem>, Serializable
 	{
 		if(other instanceof QueryItem)
 		{
-			final QueryItem that = (QueryItem)other;
+			final QueryItem that = (QueryItem) other;
 			return this.type == that.type && this.group == that.group && this.id == that.id;
 		}
 
@@ -112,7 +112,7 @@ public abstract class QueryItem implements Comparable<QueryItem>, Serializable
 	@Override
 	public int hashCode()
 	{
-		return type.hashCode() + 13 * group + 7 * id;
+		return type.hashCode() + 13 * group + 7 * (int) id;
 	}
 
 	/**

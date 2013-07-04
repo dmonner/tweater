@@ -42,7 +42,7 @@ public class Querier extends Thread
 	/**
 	 * The collection of user IDs to follow
 	 */
-	private int[] follow;
+	private long[] follow;
 	/**
 	 * The minimum amount of time (ms) allowed between each request to Twitter for a change in the
 	 * query
@@ -86,7 +86,7 @@ public class Querier extends Thread
 
 		this.tw = tw;
 		this.track = new String[0];
-		this.follow = new int[0];
+		this.follow = new long[0];
 
 		this.builder = qb;
 		this.active = new TreeSet<QueryItem>();
@@ -240,7 +240,7 @@ public class Querier extends Thread
 	public void setQuery(final Collection<QueryItem> items)
 	{
 		final List<String> tracks = new LinkedList<String>();
-		final List<Integer> follows = new LinkedList<Integer>();
+		final List<Long> follows = new LinkedList<Long>();
 
 		for(final QueryItem item : items)
 			if(item instanceof QueryTrack)
@@ -251,9 +251,9 @@ public class Querier extends Thread
 				follows.add(((QueryFollow) item).userid);
 
 		track = tracks.toArray(new String[tracks.size()]);
-		follow = new int[follows.size()];
+		follow = new long[follows.size()];
 		int i = 0;
-		for(final int userid : follows)
+		for(final long userid : follows)
 			follow[i++] = userid;
 
 		disconnect();

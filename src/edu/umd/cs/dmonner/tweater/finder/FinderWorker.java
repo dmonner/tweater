@@ -123,8 +123,8 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 		this.log.info("Initializing " + id);
 
 		// Register for remote commands
-		final FinderWorkerControl stub =
-			(FinderWorkerControl)UnicastRemoteObject.exportObject(this, port);
+		final FinderWorkerControl stub = (FinderWorkerControl) UnicastRemoteObject.exportObject(this,
+				port);
 		LocateRegistry.getRegistry().rebind(id, stub);
 		log.info("Registered " + id + " successfully on " + host + ", port " + port);
 	}
@@ -152,8 +152,8 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 			try
 			{
 				log.finer("Returning " + queue.size() + " status ids to the server.");
-				final FinderControl remote =
-					(FinderControl)LocateRegistry.getRegistry(server).lookup(Finder.id);
+				final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(server).lookup(
+						Finder.id);
 				remote.add(queue);
 				queue.clear();
 				log.finer("Returned status id list successfully.");
@@ -174,6 +174,7 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderWorkerControl#enqueue(java.util.List)
 	 */
+	@Override
 	public synchronized void enqueue(final List<Long> status_ids)
 	{
 		log.info("Received " + status_ids.size() + " status ids from the server.");
@@ -191,8 +192,8 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 		try
 		{
 			log.finer("Sending server ignore signal for " + status_id + ".");
-			final FinderControl remote =
-				(FinderControl)LocateRegistry.getRegistry(server).lookup(Finder.id);
+			final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(server).lookup(
+					Finder.id);
 			remote.ignore(status_id);
 			log.finer("Sent ignore signal for " + status_id + " successfully.");
 		}
@@ -228,8 +229,8 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 
 				// If successful, use the result to update the ready time and remaining API hits
 				final RateLimitStatus rls = status.getRateLimitStatus();
-				remaining = rls.getRemainingHits();
-				readyAt = rls.getResetTime().getTime();
+				remaining = rls.getRemaining();
+				readyAt = rls.getResetTimeInSeconds() * 1000;
 			}
 			catch(final TwitterException ex)
 			{
@@ -238,12 +239,12 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 				remaining = -1;
 
 				if(rls != null)
-					remaining = rls.getRemainingHits();
+					remaining = rls.getRemaining();
 
 				// If we are rate limited, note the time and log the event
 				if(remaining == 0)
 				{
-					readyAt = rls.getResetTime().getTime();
+					readyAt = rls.getResetTimeInSeconds() * 1000;
 					log.info("Rate Limited until " + readyAt);
 				}
 				// Log a message if the status is from a suspended account and thus inaccessible
@@ -296,8 +297,8 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 			try
 			{
 				log.finer("Returning status " + status.getId() + " for processing on server.");
-				final FinderControl remote =
-					(FinderControl)LocateRegistry.getRegistry(server).lookup(Finder.id);
+				final FinderControl remote = (FinderControl) LocateRegistry.getRegistry(server).lookup(
+						Finder.id);
 				remote.process(status);
 				squeue.remove(0);
 				log.finer("Returned status " + status.getId() + " successfully.");
@@ -340,7 +341,7 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 			// Wait a little while between iterations
 			try
 			{
-				Thread.sleep((int)(1000.0 + Math.random() * 1000.0));
+				Thread.sleep((int) (1000.0 + Math.random() * 1000.0));
 			}
 			catch(final InterruptedException ex)
 			{
@@ -382,6 +383,7 @@ public class FinderWorker extends Thread implements FinderWorkerControl
 	 * 
 	 * @see edu.umd.cs.dmonner.tweater.finder.FinderWorkerControl#want()
 	 */
+	@Override
 	public synchronized int want()
 	{
 		return remaining - queue.size();

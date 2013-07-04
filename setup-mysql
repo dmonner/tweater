@@ -88,7 +88,7 @@ CREATE TABLE query_follow (
 # A Twitter user's information, collected at a specific time
 CREATE TABLE user (
   row_added_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  user_id INTEGER NOT NULL,
+  user_id BIGINT NOT NULL,
   user_info_from_status BIGINT NOT NULL,
   user_name VARCHAR(100) NOT NULL,
   user_join_date BIGINT NOT NULL,
